@@ -1,0 +1,8 @@
+# Ignore everything in the root directory
+/*
+
+# Allow .gitignore itself so it can be tracked
+!/.gitignore
+
+# Allow all .robot files in the root directory
+!/*.robot

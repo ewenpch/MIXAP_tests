@@ -34,8 +34,6 @@ display augementation
     Validation button
     Sleep    2s
     Next button
-    Sleep    2s
-    Next button
     Sleep    5s
     ${status}    ${message}=    Run Keyword And Ignore Error    Wait for detection
     Run Keyword If    '${status}' == 'FAIL'    Log    ⚠️ Expected behavior: The element is still visible after 25s miss detection.    WARN

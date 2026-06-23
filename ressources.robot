@@ -3,6 +3,7 @@ Library    SeleniumLibrary
 
 *** Variables ***
 ${URL}    https://mixap-lium-preprod.univ-lemans.fr/
+${RELATIVE_VIDEO_PATH}    ./assets/fakecamfeed_cortez.mjpeg
 
 
 *** Keywords ***
@@ -17,7 +18,8 @@ Set Chrome Options
     [Documentation]    Défini les paramètres du navigateur au besoin décommenter la ligne pour utiliser un flux caméra fictif
     ${options}=    Evaluate    sys.modules['selenium.webdriver'].ChromeOptions()    sys
     Call Method    ${options}    add_argument    --use-fake-ui-for-media-stream
-    #Call Method    ${options}    add_argument    --use-fake-device-for-media-stream    #display a fake video if the machine doesnt have any camera
+    Call Method    ${options}    add_argument    --use-fake-device-for-media-stream    #display a fake video if the machine doesnt have any camera
+    Call Method    ${options}    add_argument    --use-file-for-fake-video-capture\=${EXECDIR}/assets/fakecamfeed_cortez.y4m
     ${prefs}=    Create Dictionary    profile.default_content_setting_values.media_stream_camera=1    profile.default_content_setting_values.media_stream_mic=1
     Call Method    ${options}    add_experimental_option    prefs    ${prefs}
     RETURN    ${options}
@@ -193,8 +195,6 @@ Create empty validation
     Next button
     Sleep    2s
     Validation button
-    Sleep    2s
-    Next button
     Sleep    2s
     Next button
     Sleep    5s
