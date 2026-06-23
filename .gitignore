@@ -6,3 +6,4 @@
 
 # Allow all .robot files in the root directory
 !/*.robot
+!/*.md

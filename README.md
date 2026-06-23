@@ -1,0 +1,255 @@
+# MIXAP Test Cases Documentation
+
+This document describes the validation scope and execution steps for the Robot Framework end-to-end integration test files for the MIXAP web application.
+
+## 001_open_app.robot
+This test suite validates basic application accessibility and rendering under stable online network conditions.
+* **Open Web Application**: Launches the Chrome browser, navigates directly to the MIXAP web application URL, and forces a viewport maximization.
+* **Title Verification**: Asserts that the page metadata title correctly reads `MIXAP` to confirm the client-side single page application successfully bootstraps and renders its baseline document framework.
+
+## 001_open_app_offline.robot
+This test suite verifies the application's immediate Progressive Web App (PWA) initialization capabilities when network access is severed right after launch.
+* **Open Web Application**: Initializes the browser instance and loads the target site.
+* **Go Offline**: Immediately drops the network connection to emulate a user opening a cached version of the application.
+* **Title Verification**: Asserts that the document title is correctly resolved as `MIXAP`, validating that localized storage, service workers, or cached application shells can serve the page structure successfully without remote internet access.
+
+## 002_create_empty_augmentation.robot
+This test suite validates the wizard flow for establishing an empty tracking target for an **Augmented Activity** while online.
+* **Create Activity & Type Selection**: Initializes a new production workflow and explicitly sets the activity type mode to **Augmented activity**.
+* **Edit activity details**: Feeds title and instruction parameters into the metadata setup screen.
+* **Snap the background**: Triggers the system's tracking baseline setup by capturing a camera frame of the physical environment and confirming its submission.
+* **Display augmentation**: Steps through layout validations, triggers tracking engines, and logs warning diagnostic states if target detection components fail to persist tracking over specified timeout windows.
+
+## 002_create_empty_augmentation_offline.robot
+This test suite tests the **Augmented Activity empty layout workflow** under fully **offline conditions** to verify client-side computational self-sufficiency.
+* **Offline Initialization**: Maximizes the viewport and forces the browser shell into an offline runtime mode before creating the activity.
+* **Select Type & Edit**: Sets the mode to **Augmented activity** and persistent mock text values without calling backend cloud databases.
+* **Snap the background**: Captures local camera baseline reference pictures inside the offline environment.
+* **Display augmentation**: Validates client-side state handling and target monitoring routines in a simulated offline WebRTC view context.
+
+## 003_create_empty_validation.robot
+This test suite validates the creation pipeline for a **Search and Find (Validation)** activity type while connected online.
+* **Create Activity & Type Selection**: Accesses the activity wizard shelf and picks **Search and Find**.
+* **Edit activity details**: Inputs placeholder textual details (`activité numéro 1` and accompanying instructions) to specify target requirements.
+* **Snap the landscape**: Uses the hardware device capture layer to snap an environment target landscape layout frame.
+* **Display augmentation**: Progresses validation screens, exercises the engine wrapper, and asserts that the search-and-find anchor points or notification states function normally.
+
+## 003_create_empty_validation_offline.robot
+This test suite evaluates the creation resilience of the **Search and Find (Validation)** activity sequence under strict **offline conditions**.
+* **Offline Standalone Setup**: Shuts down network bridges right at setup and kicks off the activity wizard pipeline.
+* **Select Type & Edit**: Adjusts the activity layout mode to **Search and Find** entirely from local PWA structures.
+* **Snap the landscape**: Takes and saves the local environmental validation frame.
+* **Display augmentation**: Exercises multi-step layout transitions and asset validation checkpoints without active internet links, verifying local state persistence.
+
+## 004_create_empty_association.robot
+This test suite evaluates the interactive creation workflow for a **Pair Association** activity type while online.
+* **Create Activity & Select Type**: Launches the activity composition layer and selects the **Pair Association** template format.
+* **Edit activity details**: Fills out title and instruction metadata fields.
+* **Snap the landscape**: Captures the primary visual environment background target.
+* **Upload the 2nd image**: Interacts directly with the Three.js 3D viewport canvas element (`#three-canvas`), targets precise UI elements within the interactive overlay workspace, launches a secondary camera context, takes a snapshot ("Snap"), and commits it ("Save") to create an image pairing.
+* **Validate the media & Display**: Navigates through the publication pipeline, noting potential application loading anomalies, and runs verification loops to validate target detection mechanics.
+
+## 004_create_empty_association_offline.robot
+This test suite verifies the local creation mechanics of the intricate **Pair Association** layout under a completely **offline environment**.
+* **Go Offline**: Disconnects network sockets prior to starting the activity flow.
+* **Select Type & Setup**: Confirms the configuration fields for a **Pair Association** project work seamlessly offline.
+* **Snap the landscape**: Registers the baseline reference image frame in localized cache space.
+* **Upload the 2nd image**: Exercises the Three.js viewport controls and secondary canvas camera wrappers entirely offline, simulating visual target pairing captures via pure client-side interaction scripts.
+* **Validate & Display**: Runs asset processing, local media verification steps, and tracking engine diagnostic loops under network disconnection.
+
+## 005_create_empty_superposition.robot
+This test suite validates the creation of an **empty superposition layer (Information Layers)** while the application is connected online.
+* **Open Web Application & Create Activity**: Initializes the browser and navigates to the MIXAP workspace to launch a new activity creation pipeline.
+* **Select Type**: Explicitly selects the **Information layers** activity type.
+* **Edit activity details**: Inputs a standard title (`activité numéro 1`) and pedagogical instructions.
+* **Snap the landscape**: Uses the device camera interface to take a snapshot of the physical background environment and validates it.
+* **Display augmentation**: Progresses through the validation screens, verifies the system's behavior during a camera tracking sequence ("Wait for detection"), and confirms that the elements handle miss-detection thresholds correctly before returning to the home screen.
+
+## 005_create_empty_superposition_offline.robot
+This test suite verifies the resilience of the **empty superposition layer (Information Layers)** creation workflow under completely **offline conditions**.
+* **Go Offline & Initialize**: Maximizes the viewport and sets the network emulation profile to offline immediately after initialization to test progressive web app (PWA) localized caching and standalone script execution.
+* **Select Type**: Configures the activity type to **Information layers** while completely disconnected.
+* **Edit activity details**: Inputs metadata details offline to ensure local state persistence.
+* **Snap the landscape**: Takes and validates a local snapshot of the background environment.
+* **Display augmentation**: Simulates tracking detection offline to ensure the augmented reality target matching or placeholder framework operates flawlessly without fetching cloud endpoints.
+
+## 006_create_text_augmentation.robot
+This test suite validates the successful creation and placement of a **textual overlay** asset inside an **Augmented Activity** while online.
+* **Create Activity & Type Selection**: Initializes the creation wizard and sets the target layout mode to **Augmented activity**.
+* **Edit activity details**: Confirms input fields handle textual descriptions correctly.
+* **Snap the background**: Captures an environment baseline target frame via camera and confirms validation.
+* **Add text to the augmentation**: Interacts with the canvas editor tool shelf, triggers the **Text** modal asset selector, focuses the input canvas area, types a custom string value (`mon texte par défaut`), and commits the overlay transformation matrix.
+* **Display augmentation**: Launches the WebRTC camera view to scan for the target frame and validates the correct viewport display behavior of the newly provisioned text overlay.
+
+## 006_create_text_augmentation_offline.robot
+This test suite evaluates the **textual asset augmentation workflow** under disconnected **offline parameters**.
+* **Offline PWA Initialization**: Puts the browser network state into an offline execution context prior to starting the activity creation flow.
+* **Select Type & Edit**: Sets the activity type to **Augmented activity** and edits details locally.
+* **Snap the background**: Captures the visual reference tracking baseline under disconnected conditions.
+* **Add text to the augmentation**: Confirms that the canvas editor layout, asset shelf interaction, text area focus, and typing events successfully update local app states without server roundtrips.
+* **Display augmentation**: Verifies local tracking simulation and visibility thresholds under offline restrictions.
+
+## 007_create_image_augmentation.robot
+This test suite validates the integration of a **raster graphic image overlay** into an **Augmented Activity** while online.
+* **Create Activity & Configuration**: Launches the standard activity creator and selects the **Augmented activity** layout category.
+* **Snap the background**: Captures and approves the tracking baseline image.
+* **Add image to the augmentation**: Opens the canvas editor tools, selects the **Image asset tool**, focuses the media target container, triggers the operating system's native upload file selector context, and uploads an asset file (`annoter.png`) from the local test vault directory (`${EXECDIR}/tests/assets/`).
+* **Display augmentation**: Exercises tracking engines to evaluate correct handling, rendering scale, and tracking longevity of image overlays.
+
+## 007_create_image_augmentation_offline.robot
+This test suite validates the local resilience of the **image overlay upload pipeline** under strict **offline parameters**.
+* **Offline Target Setup**: Maximizes the viewport and cuts off network connections before starting the activity loop.
+* **Snap the background**: Establishes local environmental baseline frames.
+* **Add image to the augmentation**: Verifies that the internal file processing system can ingest a local file payload (`annoter.png`) and register it within the indexed storage or memory buffers of the application canvas without hitting remote image-hosting backends.
+* **Display augmentation**: Evaluates local view engine behaviors and offline tracking diagnostics.
+
+## 008_create_video_augmentation.robot
+This test suite tests the pipeline for adding a **rich media video overlay** into an **Augmented Activity** workspace while online.
+* **Create Activity & Type Selection**: Targets an **Augmented activity** layout pipeline.
+* **Snap the background**: Acquires and approves environmental reference targets.
+* **Add video to the augmentation**: Interacts with the editor toolkit shelf, selects the **Video asset tool**, triggers the media component file picker hook, and streams an absolute file transfer of a video sample payload (`pexels.mp4`) into the workspace context.
+* **Display augmentation**: Assesses the WebRTC and rendering layer to confirm the media stream wrapper doesn't stall or degrade engine tracking performance.
+
+## 008_create_video_augmentation_offline.robot
+This test suite evaluates the reliability of local video processing pipelines by executing the **video overlay upload sequence** under completely **offline conditions**.
+* **Offline Hooking**: Severs the network layer immediately after browser creation.
+* **Snap the background**: Confirms environment capture routines operate normally using local hardware pipelines.
+* **Add video to the augmentation**: Confirms that local blob URL creation or raw binary buffering of the video asset file (`pexels.mp4`) works offline without needing external processing engines.
+* **Display augmentation**: Tests the application's ability to play back and render the video target anchor purely from offline storage layers.
+
+## 009_create_sticker_augmentation.robot
+This test suite validates the inclusion of pre-baked **vector graphic icons (stickers)** within an online **Augmented Activity**.
+* **Create Activity Setup**: Launches an **Augmented activity** wizard sequence.
+* **Snap the background**: Establishes tracking coordinate constraints by taking an environmental picture frame.
+* **Add sticker to the augmentation**: Accesses the **Stickers asset shelf**, waits for internal graphics directories to load, interacts with a predefined target sticker item (`image/arrow.png` with specific alternative text tag `Image 0`), and commits it to the augmented coordinates grid.
+* **Display augmentation**: Validates target scanning routines and asset display thresholds over a continuous camera validation loop.
+
+## 009_create_sticker_augmentation_offline.robot
+This test suite validates that the pre-installed application asset pack ecosystem remains functional during a **sticker asset attachment flow** executed entirely **offline**.
+* **Offline Execution Prep**: Sets network parameters to offline and scales the application window.
+* **Snap the background**: Confirms tracking setup workflows work correctly offline.
+* **Add sticker to the augmentation**: Validates that asset picker submenus successfully pull stock vector files (`image/arrow.png`) from localized Service Worker caches or embedded compilation bundles without triggering resource network errors.
+* **Display augmentation**: Checks baseline validation routines for localized stickers on a simulated offline canvas workspace.
+
+## 010_create_audio_augmentation.robot
+This test suite verifies the process of adding an audio asset overlay onto an tracking target under online conditions.
+* **Create Activity & Select Type**: Initiates the registration pipeline and sets the template format to **Augmented activity**.
+* **Edit activity details**: Inputs mandatory metadata values such as titles.
+* **Snap the background**: Captures the visual reference background target from the environment canvas and confirms the frame snapshot.
+* **Add audio to the augmentation**: Simulates clicking the "Audio" overlay creator tool, triggers an asset selection area, uses selenium's hidden input channel to select a target local test sound file (`1645.mp3`), commits the processing workflow, and advances steps.
+* **Display augmentation**: Evaluates tracking loops to ensure client-side sound layer overlays properly target tracking signatures.
+
+## 010_create_audio_augmentation_offline.robot
+This test suite evaluates the local fallback capacity of the interactive **Audio Overlay** workflow when internet connectivity is blocked right at workspace load.
+* **Offline Initialization**: Loads the browser viewport and triggers a network cut before setting up the activity.
+* **Select Type & Capture Target**: Provisions an **Augmented activity** layout and snaps the environment marker picture completely within a client-side environment context.
+* **Add audio to the augmentation**: Validates that local cache allocation handles the media upload (`1645.mp3`) successfully without relying on background server endpoints.
+* **Display augmentation**: Verifies that the client tracking player executes diagnostics under simulated offline playback constraints.
+
+## 011_create_sheet_augmentation.robot
+This test suite evaluates placing a textual notepad block (**Note / Sheet**) onto an environment target while working online.
+* **Create Activity & Target Setup**: Follows standard sequences to initialize an **Augmented activity** template and register a visual target anchor frame.
+* **Add sheet to the augmentation**: Interacts with the overlay toolbar to select the "Note" tool component. Note: Inline text typing within this note element currently contains placeholder comment structures (`#TODO edit the sheet, unclickable`) awaiting finalized implementation paths.
+* **Display augmentation**: Ensures that placing an empty note anchor container successfully passes execution pipelines.
+
+## 011_create_sheet_augmentation_offline.robot
+This test suite tests the **Note / Sheet overlay** setup routine while the client runs disconnected from any active server bridges.
+* **Offline Intercept**: Drops network routing flags ahead of workspace provisioning.
+* **Activity & Sheet Creation**: Navigates the creation wizard into an offline **Augmented activity** shelf, snaps a physical target layer, and drops an interactive "Note" container block onto the layout canvas.
+* **Display augmentation**: Monitors state synchronization loops under network isolation constraints to confirm that local PWA memory holds structural note nodes properly.
+
+## 012_create_3D_augmentation.robot
+This test suite validates importing and loading complex 3D external environments within active augmented activities while online.
+* **Create Activity & Canvas Setup**: Configures a baseline **Augmented activity** target map configuration.
+* **Add 3d object to the augmentation**: Triggers the "3D" object asset creator slot from the utility drawer, opens the target system dialog container, and streams an external model file asset (`Tree.fbx`) into the layout pipeline.
+* **Display augmentation**: Verifies WebGL capabilities by asserting that canvas tracking operations can compile and transform a custom 3D model frame signature properly.
+
+## 012_create_3D_augmentation_offline.robot
+This test suite evaluates the client-side self-containment of importing a **3D object model asset** over isolated offline viewports.
+* **Offline Preparation**: Disconnects web sockets and opens a localized canvas sandbox workspace.
+* **Add 3d object to the augmentation**: Loads the **Augmented activity** workflow entirely out of application shells and uploads a 3D asset file path reference (`Tree.fbx`).
+* **Display augmentation**: Ensures that the local engine successfully processes and prepares 3D structures for viewport tracking without demanding connection states.
+
+## 013_create_link_augmentation.robot
+This test suite evaluates injecting interactive hyperlink elements (**URLs**) directly into a project layout context while working online.
+* **Activity Initialization**: Establishes a standard **Augmented activity** layout frame.
+* **Add link to the augmentation**: Launches the "Link" element builder card, selects the clickable overlay container component, toggles an interactive data modal window, feeds a text address anchor string (`google.com/`), and commits the structural payload checkmark.
+* **Display augmentation**: Asserts target recognition states and tests validation loops for embedded layout elements.
+
+## 013_create_link_augmentation_offline.robot
+This test suite tests interactive **Hyperlink metadata compilation workflows** under isolated offline environments.
+* **Offline Execution**: Blocks browser network bridges instantly upon workspace launch.
+* **Add link to the augmentation**: Navigates the local layout system block, accesses the URL setup forms, types the desired link reference address (`google.com/`), and validates structural changes against isolated cache storage.
+* **Display augmentation**: Confirms that editing web navigation references operates stably within purely client-side compilation blocks.
+
+## 014_home_interface_checking.robot
+This test suite handles automated functional layout audits of the application's central entry hub while working online.
+* **Open Hub Interface**: Connects directly to the primary landing platform dashboard.
+* **Change Language to French**: Opens the language configuration slide drawer drawer panel, targets the language option string (`Français`), and updates the application layout strings.
+* **Grid Filtering Verification**: Checks and isolates the main display grid components (`home__grid`), exercising visibility parameters to assert that active content blocks correctly render under respective game filters (e.g., verifying specific layout elements show for *Search and Find* profiles while suppressing items tied exclusively to unselected genres).
+
+## 014_home_interface_checking_offline.robot
+This test suite tests the dashboard language translation layers and visual asset filter structures when running completely **offline**.
+* **Go Offline at Launch**: Forces the browser immediately into an isolated offline sandbox environment.
+* **Change Language to French**: Evaluates fallback mechanisms to verify if localization assets (dictionaries/JSON resources) are locally cached by service workers, checking that text controls cleanly swap to target translation modes.
+* **Grid Filter Verification**: Exercises the main dashboard layout grids (`home__grid`), ensuring navigation tabs toggle correctly
+
+## 015_drop_activity.robot
+Validates the standard online workflow for deleting an activity. It creates an empty augmentation named "activité numéro 1", opens its menu, clicks 'Delete', and confirms the action via the deletion confirmation dialog.
+
+## 015_drop_activity_offline.robot
+Ensures that the activity deletion flow works seamlessly when the browser is completely offline, testing local data persistence and UI responsiveness.
+
+## 016_drop_activity_and_restore.robot
+Tests the online recovery mechanism for activities. After creating and deleting an activity, it navigates to the "Trash" view and verifies that the activity can be successfully restored back to the main list.
+
+## 016_drop_activity_and_restore_offline.robot
+Verifies that the trash navigation and local restoration of an activity function correctly without an active internet connection.
+
+## 017_drop_activity_permanently.robot
+Validates the permanent removal workflow online. The test creates and deletes an activity, enters the "Trash", triggers a "Delete permanently" action, and confirms the final modal to ensure data is completely cleared.
+
+## 017_drop_activity_permanently_offline.robot
+Confirms that the permanent deletion flow and its secondary confirmation dialog function correctly while working completely offline.
+
+## 018_create_empty_free_exploration_path.robot
+Tests the online creation of a "Free Exploration Path". It initializes the path creation wizard, selects the free type, populates titles and instructional details, and saves it to verify that the path card appears correctly on the main dashboard.
+
+## 018_create_empty_free_exploration_path_offline.robot
+Verifies that a user can successfully create, configure, and locally save a "Free Exploration Path" while offline.
+
+## 019_create_empty_auto_triggered_path.robot
+Confirms the online workflow for creating an "Auto-Triggered path". It navigates through the creation wizard, sets up the configuration rules, inputs metadata, and ensures the path is correctly compiled and visible upon saving.
+
+## 019_create_empty_auto_triggered_path_offline.robot
+Assures that the sequence wizard for "Auto-Triggered paths" remains fully operational without a network connection, ensuring offline resilient authoring.
+
+## 020_create_empty_guided_path.robot
+Validates the online creation wizard for a "Guided Path". It initializes a new path sequence, selects the guided configuration type, inputs the path title and student instructions, and verifies that the newly created guided sequence card correctly appears on the dashboard.
+
+## 020_create_empty_guided_path_offline.robot
+Ensures that the pedagogical wizard remains completely operational while offline, allowing teachers or authors to configure and locally save a "Guided Path" without an active internet connection.
+
+## 021_add_activities_to_path.robot
+Validates the online layout management and sequencing system. The test creates two separate empty activities and an empty learning path, then tests the user experience by using drag-and-drop operations to successfully assign both activities into the path.
+
+## 021_add_activities_to_path_offline.robot
+Verifies that the interactive drag-and-drop workflow for assigning multiple activities into a learning path functions reliably in an offline state using local layout persistence.
+
+## 022_sign_up.robot
+Tests the user registration flow within the application. It opens the user identity interface, populates username, email, and password credentials, submits the registration form, and validates successful account creation by checking for the authenticated user session indicator.
+
+## 023_sign_in.robot
+Validates the standard authentication flow. It inputs existing account credentials (email and password) into the login portal, submits the request, and verifies that the secure workspace is successfully loaded with the user's explicit profile badge.
+
+## 024_synchronize_activity.robot
+Tests the data synchronization engine. It signs into an authenticated user account, generates a localized activity ("activité numéro 1"), triggers the synchronization action on the activity card, and ensures the local changes successfully reconcile with the remote pre-production server.
+
+## 025_generate_text_augmentation.robot
+Validates the AI-assisted authoring feature for text generation. It creates an augmented reality activity, captures and confirms a target background image scene, opens the AI generation tool, inputs a prompt requesting a poem, and tests generating a text preview before embedding it as an AR layer.
+
+## 026_generate_image_augmentation.robot
+Tests the AI image asset generation workflow. It initializes an augmented activity, captures the real-world tracking environment, opens the generative AI wizard, requests an illustrative asset via a text description, previews the output image, and embeds it into the scene structure.
+
+## 027_generate_audio_augmentation.robot
+Validates the text-to-speech AI generation component. The workflow establishes a target AR tracking scene, utilizes the text-to-speech option inside the AI authoring tool to generate an audio preview from a string ("Hello world !"), mounts the audio asset to the overlay layer, and verifies detection behaviors.
