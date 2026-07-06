@@ -40,7 +40,7 @@ Add video to the augmentation
     Wait Until Element Is Visible    xpath=//div[contains(@class, 'ant-typography') and contains(., 'Click to edit...')]    15s
     Click Element    xpath=//div[contains(@class, 'ant-typography') and contains(., 'Click to edit...')]
 
-    Choose File    xpath=//input[@type='file']    ${EXECDIR}/tests/assets/pexels.mp4
+    Choose File    xpath=//input[@type='file']    ${EXECDIR}/assets/pexels.mp4
 
     Next button
 

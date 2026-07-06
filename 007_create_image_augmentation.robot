@@ -9,7 +9,7 @@ ${URL}    https://mixap-lium-preprod.univ-lemans.fr/
 
 
 *** Test Cases ***
-Create empty augementation
+Create empty augmented activity
     Open Web Application
     Create Activity
 
@@ -32,18 +32,18 @@ Snap the background
     Validation button
     #Next button
 
-Add image to the augmentation
+Add image to the activity
     Wait Until Element Is Visible    xpath=//button[@title='Image']    15s
     Click Element    xpath=//button[@title='Image']
 
     Wait Until Element Is Visible    xpath=//h5[contains(text(), 'Click to edit...')]    15s
     Click Element    xpath=//h5[contains(text(), 'Click to edit...')]
 
-    Choose File    xpath=//input[@type='file']    ${EXECDIR}/tests/assets/annoter.png
+    Choose File    xpath=//input[@type='file']    ${EXECDIR}/assets/annoter.png
 
     Next button
 
-display augementation
+display augmented activity
     Sleep    2s
     ${status}    ${message}=    Run Keyword And Ignore Error    Wait for detection
     Run Keyword If    '${status}' == 'FAIL'    Log    ⚠️ Expected behavior: The element is still visible after 25s miss detection.    WARN

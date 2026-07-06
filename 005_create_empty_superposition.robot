@@ -8,7 +8,7 @@ Resource       ./ressources.robot
 ${URL}    https://mixap-lium-preprod.univ-lemans.fr/
 
 *** Test Cases ***
-Create empty superposition
+Create empty layers activity
     Open Web Application
     Create Activity
 
@@ -26,7 +26,7 @@ Snap the landscape
     Sleep    2s
     Validate the image
 
-display augementation
+display activity
     Next button
     Sleep    2s
     Validation button

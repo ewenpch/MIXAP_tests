@@ -72,6 +72,13 @@ Snap the background
     Wait Until Element Is Visible    xpath=//button[.//span[text()='Snap']]    20s
     Click Element    xpath=//button[.//span[text()='Snap']]
 
+Use template image
+    [Documentation]    use a template image instead of taking a photo
+    Sleep    2s
+    Wait Until Element Is Visible    xpath=//span[text()='upload image']
+    Click Element    xpath=//span[text()='upload image']
+    Choose File    xpath=//input[@type='file']    ${EXECDIR}/assets/fakecamfeed_cortez.png
+    
 Select Activity Type
     [Documentation]    Select the activity type using a parameter
     [Arguments]    ${activity_type}
@@ -112,6 +119,16 @@ Click home button
     #Click element using JavaScript to avoid issues with overlapping elements
     Execute JavaScript    document.querySelector("button.editor__close-button").click();
 
+Add Tag to Activity
+    [Documentation]    Add a tag to the activity using the provided tag name
+    [Arguments]    ${tag_name}
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__labels-btn')]    5s
+    Click Element    xpath=//button[contains(@class, 'home__labels-btn')]
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'labels-panel__action-btn')]    5s
+    Click Element    xpath=//button[contains(@class, 'labels-panel__action-btn')]
+    Input Text    xpath=//input[contains(@class, 'labels-panel__add-name-input')]    ${tag_name}
+    Press Keys    xpath=//input[contains(@class, 'ant-select-selection-search-input')]    RETURN
+
 Edit Activity Title
     [Arguments]    ${title}
     #Click Element    xpath=//span[@id='title_editor']/div[@role='button']
@@ -145,6 +162,7 @@ Edit Path Instructions
     Sleep    2    # Manually wait for the text to be updated
 
 Edit Activity Description
+    [Documentation]    Edit the activity description using the provided description text
     [Arguments]    ${description}
     Click Element    xpath=//span[@id='description_editor']/div[@role='button']
     Wait Until Element Is Visible    xpath=//textarea[not(contains(@style, 'visibility:hidden'))]    5s
@@ -152,7 +170,8 @@ Edit Activity Description
     Press Keys    xpath=//textarea[not(contains(@style, 'visibility:hidden'))]    RETURN
     Sleep    2    # Manually wait for the text to be updated
 
-Create empty augementation
+Create empty augmented activity
+    [Documentation]    Create an empty augmented activity with a title, snap the background and validate
     [Arguments]    ${title}
     Create Activity
     Select Activity Type    Augmented activity
@@ -176,7 +195,31 @@ Create empty augementation
     Run Keyword If    '${status}' == 'FAIL'    Log    ⚠️ Expected behavior: The element is still visible after 25s miss detection.    WARN
     Click home button
 
+Quickcreate empty augmented activity
+    [Documentation]    Create an empty augmented activity with a title, use a photo and validate
+    [Arguments]    ${title}
+    Create Activity
+    Select Activity Type    Augmented activity
+    Next button
+    Sleep    2s
+    Wait Until Element Is Visible    xpath=//input[contains(@class, 'activity-view__input--title')]    5s
+    Input Text    xpath=//input[contains(@class, 'activity-view__input--title')]    ${title}
+    Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary editor__nav-button editor__nav-button--primary')]
+    Sleep    2s
+    Use template image
+    Sleep    2s
+    Next button
+    Sleep    2s
+    Validation button
+    Sleep    2s
+    Next button
+    Sleep    2s
+    ${status}    ${message}=    Run Keyword And Ignore Error    Wait for detection
+    Run Keyword If    '${status}' == 'FAIL'    Log    ⚠️ Expected behavior: The element is still visible after 25s miss detection.    WARN
+    Click home button
+
 Create empty validation
+    [Documentation]    Create an empty validation with a title and instructions, snap the background and validate
     [Arguments]    ${title}    ${instructions}
     Create Activity
     Select Activity Type    Search and Find
@@ -203,6 +246,7 @@ Create empty validation
     Click home button
 
 Create empty path
+    [Documentation]    Create an empty path with a title and instructions
     Create Path
     Select Path Type    Free Exploration Path
     Edit Path Title    parcours numéro 1
@@ -212,6 +256,7 @@ Create empty path
     Wait Until Element Is Visible    xpath=//div[h3[contains(@class, 'activity-card__title activity-card__title--large-light') and text()='parcours numéro 1']]    15s
 
 Go Offline
+    [Documentation]    Set the browser to offline mode using Chrome DevTools Protocol (CDP)
     ${seleniumlib}    Get Library Instance    SeleniumLibrary
     VAR    ${webdriver}    ${seleniumlib.driver}
     # SetOffline

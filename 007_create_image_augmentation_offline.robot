@@ -9,7 +9,7 @@ ${URL}    https://mixap-lium-preprod.univ-lemans.fr/
 
 
 *** Test Cases ***
-Create empty augementation
+Create empty augmented activity offline
     Open Web Application
     Maximize Browser Window
     Go Offline
@@ -34,7 +34,7 @@ Snap the background
     Validation button
     #Next button
 
-Add image to the augmentation
+Add image to the augmented activity
     Wait Until Element Is Visible    xpath=//button[@title='Image']    15s
     Click Element    xpath=//button[@title='Image']
 
@@ -45,7 +45,7 @@ Add image to the augmentation
 
     Next button
 
-display augementation
+display augmented activity
     Sleep    2s
     ${status}    ${message}=    Run Keyword And Ignore Error    Wait for detection
     Run Keyword If    '${status}' == 'FAIL'    Log    ⚠️ Expected behavior: The element is still visible after 25s miss detection.    WARN

@@ -9,7 +9,7 @@ ${URL}    https://mixap-lium-preprod.univ-lemans.fr/
 
 
 *** Test Cases ***
-Create empty augementation
+Create empty augmented activity offline
     Open Web Application
     Maximize Browser Window
     Go Offline
@@ -33,18 +33,41 @@ Snap the background
     Sleep    2s
     Validation button
     #Next button
-Add 3d object to the augmentation
+
+Add fbx 3d object to the augmentation
     Wait Until Element Is Visible    xpath=//button[@title='3D']    15s
     Click Element    xpath=//button[@title='3D']
 
     Wait Until Element Is Visible    xpath=//h5[contains(text(), 'Click to edit...')]    15s
     Click Element    xpath=//h5[contains(text(), 'Click to edit...')]
-    Choose File    xpath=//input[@type='file']    ${EXECDIR}/tests/assets/Tree.fbx
+    Choose File    xpath=//input[@type='file']    ${EXECDIR}/assets/Tree.fbx
+
+    Sleep    2
+    #Next button
+
+Add glb 3d object to the augmentation
+    Wait Until Element Is Visible    xpath=//button[@title='3D']    15s
+    Click Element    xpath=//button[@title='3D']
+
+    Wait Until Element Is Visible    xpath=//h5[contains(text(), 'Click to edit...')]    15s
+    Click Element    xpath=//h5[contains(text(), 'Click to edit...')]
+    Choose File    xpath=//input[@type='file']    ${EXECDIR}/assets/3d_Ingenuity.glb
+
+    Sleep    2
+    #Next button
+
+Add obj 3d object to the augmentation
+    Wait Until Element Is Visible    xpath=//button[@title='3D']    15s
+    Click Element    xpath=//button[@title='3D']
+
+    Wait Until Element Is Visible    xpath=//h5[contains(text(), 'Click to edit...')]    15s
+    Click Element    xpath=//h5[contains(text(), 'Click to edit...')]
+    Choose File    xpath=//input[@type='file']    ${EXECDIR}/assets/blender.obj
 
     Sleep    2
     Next button
 
-display augementation
+display augmented activity
     Sleep    2s
     ${status}    ${message}=    Run Keyword And Ignore Error    Wait for detection
     Run Keyword If    '${status}' == 'FAIL'    Log    ⚠️ Expected behavior: The element is still visible after 25s miss detection.    WARN
