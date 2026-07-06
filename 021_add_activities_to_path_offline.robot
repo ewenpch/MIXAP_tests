@@ -14,8 +14,8 @@ Create 2 activities
     Open Web Application
     Maximize Browser Window
     Go Offline
-    Create empty augementation    activité numéro 1
-    Create empty augementation    activité numéro 2
+    Create empty augmented activity    activité numéro 1
+    Create empty augmented activity    activité numéro 2
 
 Create path
     Create empty path

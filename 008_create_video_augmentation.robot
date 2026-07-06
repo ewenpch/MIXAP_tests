@@ -9,7 +9,7 @@ ${URL}    https://mixap-lium-preprod.univ-lemans.fr/
 
 
 *** Test Cases ***
-Create empty augementation
+Create empty aaugmented activity
     Open Web Application
     Create Activity
 
@@ -32,7 +32,7 @@ Snap the background
     Validation button
     #Next button
 
-Add video to the augmentation
+Add video to the activity
     Wait Until Element Is Visible    xpath=//button[@title='Video']    15s
     Click Element    xpath=//button[@title='Video']
 
@@ -43,7 +43,7 @@ Add video to the augmentation
 
     Next button
 
-display augementation
+display activity
     Sleep    2s
     ${status}    ${message}=    Run Keyword And Ignore Error    Wait for detection
     Run Keyword If    '${status}' == 'FAIL'    Log    ⚠️ Expected behavior: The element is still visible after 25s miss detection.    WARN

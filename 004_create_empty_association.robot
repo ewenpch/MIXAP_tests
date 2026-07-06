@@ -13,7 +13,7 @@ ${FILE_PATH_2}    ${EXECDIR}/assets/annoter.png
 
 *** Test Cases ***
 
-Create empty association
+Create empty association activity
     Open Web Application
     Maximize Browser Window
     Create Activity
@@ -64,7 +64,7 @@ validate the media
     Sleep    2s
     Next button
 
-display augementation
+display activity
 
     Sleep    5s
     #Wait for detection

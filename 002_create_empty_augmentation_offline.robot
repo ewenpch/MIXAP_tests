@@ -9,7 +9,7 @@ ${URL}    https://mixap-lium-preprod.univ-lemans.fr/
 
 
 *** Test Cases ***
-Create empty augementation
+Create empty augmented activity offline
     Open Web Application
     Maximize Browser Window
     Go Offline
@@ -30,7 +30,7 @@ Snap the background
     Sleep    2s
     Validate the image
 
-display augementation
+display activity
     Next button
     Sleep    2s
     Validation button
