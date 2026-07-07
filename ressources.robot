@@ -273,4 +273,13 @@ Sign In
     Input Text    xpath=//input[@placeholder='••••••••']    ${password}
     Click Element    xpath=//button[text()='Continue']
     Sleep    5s
-    Wait Until Element Is Visible    xpath=//button[.//span[text()='testuser']]    15s
+
+Import Activity
+    [Documentation]    Import an activity using the provided code
+    [Arguments]    ${code}
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__import-btn')]    15s
+    Click Element    xpath=//button[contains(@class, 'home__import-btn')]
+    Wait Until Element Is Visible    xpath=//input[@placeholder='Select a share code']    15s
+    Click Element    xpath=//input[@placeholder='Select a share code']
+    Input Text    xpath=//input[@placeholder='Select a share code']    ${code}
+    Click Element    xpath=//button[contains(@class, 'import-modal__button')]
