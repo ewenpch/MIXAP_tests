@@ -45,12 +45,10 @@ Add text to the augmented activity
     Sleep    2s
 
 Change text properties
-    Wait Until Element Is Visible    xpath=//button[@title='Text']    15s
-    Click Element    xpath=//button[@title='Text']
-
     Wait Until Element Is Visible    xpath=//textarea[@placeholder='Edit your text...']    15s
     Click Element    xpath=//textarea[@placeholder='Edit your text...']
     Input Text    xpath=//textarea[@placeholder='Edit your text...']    mon texte modifié
+
     Next button
 
 display augmented activity

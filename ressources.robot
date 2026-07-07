@@ -261,3 +261,16 @@ Add Activity to Path
     [Arguments]    ${activity_title}
     Wait Until Element Is Visible    xpath=//div[h3[contains(@class, 'activity-card') and text()='${activity_title}']]    15s
     Drag And Drop    xpath=//div[h3[contains(@class, 'activity-card') and text()='${activity_title}']]    xpath=//div[contains(@class, 'activity-card--group')]
+
+Sign In
+    [Documentation]    Sign in to the application using the provided email and password
+    [Arguments]    ${email}    ${password}
+    Wait Until Element Is Visible    xpath=//button[.//span[contains(@class, 'anticon anticon-user')]]    15s
+    Click Element    xpath=//button[.//span[contains(@class, 'anticon anticon-user')]]
+    Wait Until Element Is Visible    xpath=//button[text()='Login']    15s
+    Click Element    xpath=//button[text()='Login']
+    Input Text    xpath=//input[@placeholder='you@company.com']    ${email}
+    Input Text    xpath=//input[@placeholder='••••••••']    ${password}
+    Click Element    xpath=//button[text()='Continue']
+    Sleep    5s
+    Wait Until Element Is Visible    xpath=//button[.//span[text()='testuser']]    15s
