@@ -282,4 +282,4 @@ Import Activity
     Wait Until Element Is Visible    xpath=//input[@placeholder='Select a share code']    15s
     Click Element    xpath=//input[@placeholder='Select a share code']
     Input Text    xpath=//input[@placeholder='Select a share code']    ${code}
-    Click Element    xpath=//button[contains(@class, 'import-modal__button')]
+    Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary ant-btn-lg ant-btn-block import-modal__button import-modal__button--primary')]

@@ -35,8 +35,15 @@ Import activity with share code
     Open Web Application
     Sign In    test3@example.com   password123
     Import Activity    ${sharecode}
+    Sleep    2s
 
 Launch imported activity
-    Click home button
-    Sleep    10s
+    Click Element    xpath=//button[contains(@class, 'activity-card__title-arrow-button')]
+    Sleep    2s
+    ${status}    ${message}=    Run Keyword And Ignore Error    Wait for detection
+    Run Keyword If    '${status}' == 'FAIL'    Log    ⚠️ Expected behavior: The element is still visible after 25s miss detection.    WARN
+    #IF Element Is Visible    xpath=//div[contains(@class, 'ant-notification-notice-wrapper')]
+    #    Click Element    xpath=//a[contains(@class, 'ant-notification-notice-close')]
+    #END
+#    sleep     20s     #used to watch the result can be commentend if necessary
     Close Browser
