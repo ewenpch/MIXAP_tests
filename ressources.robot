@@ -260,7 +260,9 @@ Add Activity to Path
     [Documentation]    Add an activity to the path using the provided activity title
     [Arguments]    ${activity_title}
     Wait Until Element Is Visible    xpath=//div[h3[contains(@class, 'activity-card') and text()='${activity_title}']]    15s
-    Drag And Drop    xpath=//div[h3[contains(@class, 'activity-card') and text()='${activity_title}']]    xpath=//div[contains(@class, 'activity-card--group')]
+    Click Element    xpath=//div[h3[contains(@class, 'activity-card') and text()='${activity_title}']]
+    Drag And Drop    xpath=//div[h3[contains(@class, 'activity-card') and text()='${activity_title}']]    xpath=//*[contains(@class,'activity-card--group')]/*[contains(@class,'activity-card__content')]
+    Sleep    2s
 
 Sign In
     [Documentation]    Sign in to the application using the provided email and password
