@@ -128,6 +128,19 @@ Add Tag to Activity
     Click Element    xpath=//button[contains(@class, 'labels-panel__action-btn')]
     Input Text    xpath=//input[contains(@class, 'labels-panel__add-name-input')]    ${tag_name}
     Press Keys    xpath=//input[contains(@class, 'ant-select-selection-search-input')]    RETURN
+    Click Element    xpath=//button[contains(@class, 'labels-panel__add-submit')]
+    Click Element    xpath=//button[contains(@class, 'labels-panel__close')]
+
+Delete Tag from Activity
+    [Documentation]    Delete a tag from the activity using the provided tag name
+    [Arguments]    ${tag_name}
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__labels-btn')]    5s
+    Click Element    xpath=//button[contains(@class, 'home__labels-btn')]
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'labels-panel__chip-icon-btn')]    5s
+    Click Element    xpath=//button[contains(@class, 'labels-panel__chip-icon-btn')]
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'confirmation-dialog__button')]    5s
+    Click Element    xpath=//button[contains(@class, 'confirmation-dialog__button')]
+    Click Element    xpath=//button[contains(@class, 'labels-panel__close')]
 
 Edit Activity Title
     [Arguments]    ${title}
@@ -195,29 +208,6 @@ Create empty augmented activity
     Run Keyword If    '${status}' == 'FAIL'    Log    ⚠️ Expected behavior: The element is still visible after 25s miss detection.    WARN
     Click home button
 
-Quickcreate empty augmented activity
-    [Documentation]    Create an empty augmented activity with a title, use a photo and validate
-    [Arguments]    ${title}
-    Create Activity
-    Select Activity Type    Augmented activity
-    Next button
-    Sleep    2s
-    Wait Until Element Is Visible    xpath=//input[contains(@class, 'activity-view__input--title')]    5s
-    Input Text    xpath=//input[contains(@class, 'activity-view__input--title')]    ${title}
-    Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary editor__nav-button editor__nav-button--primary')]
-    Sleep    2s
-    Use template image
-    Sleep    2s
-    Next button
-    Sleep    2s
-    Validation button
-    Sleep    2s
-    Next button
-    Sleep    2s
-    ${status}    ${message}=    Run Keyword And Ignore Error    Wait for detection
-    Run Keyword If    '${status}' == 'FAIL'    Log    ⚠️ Expected behavior: The element is still visible after 25s miss detection.    WARN
-    Click home button
-
 Create empty validation
     [Documentation]    Create an empty validation with a title and instructions, snap the background and validate
     [Arguments]    ${title}    ${instructions}
@@ -265,3 +255,9 @@ Go Offline
     ${conditions}    Create Dictionary    offline=${True}    latency=${novalue}    downloadThroughput=${novalue}    uploadThroughput=${novalue}
     Call Method    ${webdriver}    execute_cdp_cmd    Network.emulateNetworkConditions    ${conditions}
     Wait Until Element Is Visible    xpath=//button[.//span[contains(@class, 'anticon-disconnect')]]    15s
+
+Add Activity to Path
+    [Documentation]    Add an activity to the path using the provided activity title
+    [Arguments]    ${activity_title}
+    Wait Until Element Is Visible    xpath=//div[h3[contains(@class, 'activity-card__title activity-card__title--large-light') and text()='${activity_title}']]    15s
+    Drag And Drop    xpath=//div[h3[contains(@class, 'activity-card__title activity-card__title--large-light') and text()='${activity_title}']]    xpath=//div[contains(@class, 'learning-path-view__activities-list')]
