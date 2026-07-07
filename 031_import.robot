@@ -35,3 +35,8 @@ Import activity with share code
     Open Web Application
     Sign In    test3@example.com   password123
     Import Activity    ${sharecode}
+
+Launch imported activity
+    Click home button
+    Sleep    10s
+    Close Browser
