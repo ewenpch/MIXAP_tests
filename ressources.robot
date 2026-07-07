@@ -259,5 +259,27 @@ Go Offline
 Add Activity to Path
     [Documentation]    Add an activity to the path using the provided activity title
     [Arguments]    ${activity_title}
-    Wait Until Element Is Visible    xpath=//div[h3[contains(@class, 'activity-card__title activity-card__title--large-light') and text()='${activity_title}']]    15s
-    Drag And Drop    xpath=//div[h3[contains(@class, 'activity-card__title activity-card__title--large-light') and text()='${activity_title}']]    xpath=//div[contains(@class, 'learning-path-view__activities-list')]
+    Wait Until Element Is Visible    xpath=//div[h3[contains(@class, 'activity-card') and text()='${activity_title}']]    15s
+    Drag And Drop    xpath=//div[h3[contains(@class, 'activity-card') and text()='${activity_title}']]    xpath=//div[contains(@class, 'activity-card--group')]
+
+Sign In
+    [Documentation]    Sign in to the application using the provided email and password
+    [Arguments]    ${email}    ${password}
+    Wait Until Element Is Visible    xpath=//button[.//span[contains(@class, 'anticon anticon-user')]]    15s
+    Click Element    xpath=//button[.//span[contains(@class, 'anticon anticon-user')]]
+    Wait Until Element Is Visible    xpath=//button[text()='Login']    15s
+    Click Element    xpath=//button[text()='Login']
+    Input Text    xpath=//input[@placeholder='you@company.com']    ${email}
+    Input Text    xpath=//input[@placeholder='••••••••']    ${password}
+    Click Element    xpath=//button[text()='Continue']
+    Sleep    5s
+
+Import Activity
+    [Documentation]    Import an activity using the provided code
+    [Arguments]    ${code}
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__import-btn')]    15s
+    Click Element    xpath=//button[contains(@class, 'home__import-btn')]
+    Wait Until Element Is Visible    xpath=//input[@placeholder='Select a share code']    15s
+    Click Element    xpath=//input[@placeholder='Select a share code']
+    Input Text    xpath=//input[@placeholder='Select a share code']    ${code}
+    Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary ant-btn-lg ant-btn-block import-modal__button import-modal__button--primary')]
