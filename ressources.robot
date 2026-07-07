@@ -259,5 +259,5 @@ Go Offline
 Add Activity to Path
     [Documentation]    Add an activity to the path using the provided activity title
     [Arguments]    ${activity_title}
-    Wait Until Element Is Visible    xpath=//div[h3[contains(@class, 'activity-card__title activity-card__title--large-light') and text()='${activity_title}']]    15s
-    Drag And Drop    xpath=//div[h3[contains(@class, 'activity-card__title activity-card__title--large-light') and text()='${activity_title}']]    xpath=//div[contains(@class, 'learning-path-view__activities-list')]
+    Wait Until Element Is Visible    xpath=//div[h3[contains(@class, 'activity-card') and text()='${activity_title}']]    15s
+    Drag And Drop    xpath=//div[h3[contains(@class, 'activity-card') and text()='${activity_title}']]    xpath=//div[contains(@class, 'activity-card--group')]

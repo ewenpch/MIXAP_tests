@@ -19,4 +19,3 @@ put 8 activities in path
     FOR    ${i}    IN RANGE    1    9
         Add Activity to Path    activité numéro ${i}
     END
-    Close Browser
