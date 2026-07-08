@@ -253,3 +253,26 @@ Tests the AI image asset generation workflow. It initializes an augmented activi
 
 ## 027_generate_audio_augmentation.robot
 Validates the text-to-speech AI generation component. The workflow establishes a target AR tracking scene, utilizes the text-to-speech option inside the AI authoring tool to generate an audio preview from a string ("Hello world !"), mounts the audio asset to the overlay layer, and verifies detection behaviors.
+
+## 028_load.robot
+Stress-tests the local creation and layout pipeline by working entirely in an unauthenticated session (the browser is opened without signing in and kept open across both test cases). It creates eight augmented activities in a row (`activité numéro 1` through `8`), creates a single empty path, and then drags all eight activities into that path to confirm the drag-and-drop sequencing holds up under a larger batch of items.
+
+## 029_tag.robot
+Validates the tag/label management workflow on an activity. It creates a single activity, opens the labels panel to attach a new tag (`tag numéro 1`) through the label creation input, then in a second test case reopens the panel and removes that same tag, confirming the deletion through the confirmation dialog.
+
+## 030_text_updates_augmentation.robot
+Validates the rich-text editing controls of a text overlay inside an Augmented Activity while online. After creating the activity and snapping a background target, it adds a text element and edits its content, then toggles the bold, italic, and small-caps formatting buttons in turn, asserting the underlying text area's computed `font-weight`, `font-style`, and `font-variant` CSS values change accordingly, before finally resetting all styles back to normal and re-asserting the default values.
+
+## 030_text_updates_augmentation_offline.robot
+Repeats the text overlay formatting checks from 030_text_updates_augmentation.robot (add, edit, bold, italic, small-caps, normal) entirely under offline network conditions, confirming that the rich-text editor's style toggles and their computed CSS side effects work purely from local client-side state.
+
+## 031_import.robot
+Validates the single-activity cross-account sharing flow. One user creates a single activity and generates a share code through the cloud sync modal, a second user imports it using that code, and the imported activity is then launched to confirm the tracking session mounts correctly. This is the single-activity precursor to the path-sharing scenario covered by 032_load_import.robot.
+
+## 032_load_import.robot
+Validates the full cross-account sharing and import lifecycle for a learning path. It signs in as one user, creates eight activities and an empty path, drags all eight activities into the path, then triggers the cloud sync/share flow to generate an 8-character share code. It then signs in as a second user, imports the path using that code, and launches the imported activity to confirm the tracking session mounts correctly.
+
+Because the test accounts accumulate activities and paths across repeated runs (there is no teardown step and the accounts cannot be cleared), every activity and path title is suffixed with a random string generated at runtime so that XPath lookups by title never collide with stale data from a previous execution. The drag-and-drop target and the sync button are both scoped to the freshly created path's own card (`ancestor::div[contains(@class, 'activity-card--group')]`) rather than matching the first matching element on the page, since the account's home grid can contain several same-named paths from earlier runs. The activity card click and the import modal both retry a few times (`Wait Until Keyword Succeeds`) to absorb layout shifts and occasional swallowed clicks caused by the growing account size. The browser is also launched with Chrome's password leak detection and password manager disabled, since the test account intentionally uses a simple, non-sensitive password that would otherwise trigger a native "compromised password" prompt and kill the WebDriver session.
+
+## 033_filter_basic.robot
+Validates the home screen's type filter control. It creates one path and one activity, opens the filter panel, and selects the "activity" filter option to assert exactly one activity-typed card remains visible, then switches to the "path" filter option and asserts exactly one path-typed card remains visible.
