@@ -24,7 +24,7 @@ Sign in
     Wait Until Element Is Visible    xpath=//button[.//span[text()='testuser']]    15s
 
 Create activity
-    Create empty augementation    activité numéro 1
+    Create empty augmented activity   activité numéro 1
 
 Synchronize activity
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'activity-card__action-button activity-card__action-button--sync')]    15s
