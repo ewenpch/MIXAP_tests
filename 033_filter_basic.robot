@@ -1,0 +1,36 @@
+*** Settings ***
+Library    SeleniumLibrary
+Library    OperatingSystem
+Resource       ./ressources.robot
+
+*** Variables ***
+
+${URL}    https://mixap-lium-preprod.univ-lemans.fr/
+
+*** Test Cases ***
+Create a path and an activity
+    Open Web Application
+    Create empty path
+    Create empty augmented activity    activité numéro 1
+
+Filter activities and paths
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__filter-btn')]    15s
+    Click Element    xpath=//button[contains(@class, 'home__filter-btn')]
+
+    Wait Until Element Is Visible    xpath=//input[@value='activity']/ancestor::label    15s
+    Click Element    xpath=//input[@value='activity']/ancestor::label
+    
+    ## Check that only activities are displayed
+    ${rows}=    Get WebElements    xpath=//div[contains(@class, 'activity-card__title')]
+    ${count}=   Get Length         ${rows}
+    Should Be True    ${count} == 1
+    Log    Nombre d'activités: ${count} (devrait être 1)
+
+    Wait Until Element Is Visible    xpath=//input[@value='path']/ancestor::label    15s
+    Click Element    xpath=//input[@value='path']/ancestor::label
+
+    ## Check that only paths are displayed
+    ${rows}=    Get WebElements    xpath=//div[contains(@class, 'activity-card__title')]
+    ${count}=   Get Length         ${rows}
+    Should Be True    ${count} == 1
+    Log    Nombre de chemins: ${count} (devrait être 1)
