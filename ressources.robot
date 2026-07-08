@@ -20,8 +20,14 @@ Set Chrome Options
     Call Method    ${options}    add_argument    --use-fake-ui-for-media-stream
     Call Method    ${options}    add_argument    --use-fake-device-for-media-stream    #display a fake video if the machine doesnt have any camera
     Call Method    ${options}    add_argument    --use-file-for-fake-video-capture\=${EXECDIR}/assets/fakecamfeed_cortez.y4m
-    ${prefs}=    Create Dictionary    profile.default_content_setting_values.media_stream_camera=1    profile.default_content_setting_values.media_stream_mic=1
+    ${prefs}=    Create Dictionary
+    ...    profile.default_content_setting_values.media_stream_camera=1
+    ...    profile.default_content_setting_values.media_stream_mic=1
+    ...    credentials_enable_service=${False}
+    ...    profile.password_manager_enabled=${False}
+    ...    profile.password_manager_leak_detection=${False}
     Call Method    ${options}    add_experimental_option    prefs    ${prefs}
+    Call Method    ${options}    add_argument    --disable-features\=PasswordLeakDetection,LeakDetectionUnauthenticated,PasswordChange
     RETURN    ${options}
 
 Open Web Application
@@ -237,13 +243,14 @@ Create empty validation
 
 Create empty path
     [Documentation]    Create an empty path with a title and instructions
+    [Arguments]    ${title}=parcours numéro 1
     Create Path
     Select Path Type    Free Exploration Path
-    Edit Path Title    parcours numéro 1
+    Edit Path Title    ${title}
     Edit Path Instructions    instruction relative au parcours numéro 1
     Next button
     Sleep    2s
-    Wait Until Element Is Visible    xpath=//div[h3[contains(@class, 'activity-card__title activity-card__title--large-light') and text()='parcours numéro 1']]    15s
+    Wait Until Element Is Visible    xpath=//div[h3[contains(@class, 'activity-card__title activity-card__title--large-light') and text()='${title}']]    15s
 
 Go Offline
     [Documentation]    Set the browser to offline mode using Chrome DevTools Protocol (CDP)
@@ -256,13 +263,24 @@ Go Offline
     Call Method    ${webdriver}    execute_cdp_cmd    Network.emulateNetworkConditions    ${conditions}
     Wait Until Element Is Visible    xpath=//button[.//span[contains(@class, 'anticon-disconnect')]]    15s
 
-Add Activity to Path
-    [Documentation]    Add an activity to the path using the provided activity title
+Click Activity Card
+    [Documentation]    Scroll to and click an activity card identified by its title. Retried by its caller since the layout can shift between the scroll and the click on large accounts.
     [Arguments]    ${activity_title}
-    Wait Until Element Is Visible    xpath=//div[h3[contains(@class, 'activity-card') and text()='${activity_title}']]    15s
+    Scroll Element Into View    xpath=//div[h3[contains(@class, 'activity-card') and text()='${activity_title}']]
     Click Element    xpath=//div[h3[contains(@class, 'activity-card') and text()='${activity_title}']]
-    Drag And Drop    xpath=//div[h3[contains(@class, 'activity-card') and text()='${activity_title}']]    xpath=//*[contains(@class,'activity-card--group')]/*[contains(@class,'activity-card__content')]
-    Sleep    2s
+
+Add Activity to Path
+    [Documentation]    Add an activity to the path using the provided activity title. When ${path_title} is given, the drop target is scoped to that specific path's card, which matters when the account has more than one path visible on screen.
+    [Arguments]    ${activity_title}    ${path_title}=${EMPTY}
+    Wait Until Element Is Visible    xpath=//div[h3[contains(@class, 'activity-card') and text()='${activity_title}']]    15s
+    Wait Until Keyword Succeeds    3x    2s    Click Activity Card    ${activity_title}
+    IF    '${path_title}' != '${EMPTY}'
+        ${drop_target}=    Set Variable    xpath=//h3[contains(@class, 'activity-card') and text()='${path_title}']/ancestor::div[contains(@class, 'activity-card--group')][1]/*[contains(@class,'activity-card__content')]
+    ELSE
+        ${drop_target}=    Set Variable    xpath=//*[contains(@class,'activity-card--group')]/*[contains(@class,'activity-card__content')]
+    END
+    Drag And Drop    xpath=//div[h3[contains(@class, 'activity-card') and text()='${activity_title}']]    ${drop_target}
+    Sleep    4s
 
 Sign In
     [Documentation]    Sign in to the application using the provided email and password
@@ -276,12 +294,17 @@ Sign In
     Click Element    xpath=//button[text()='Continue']
     Sleep    5s
 
+Open Import Modal
+    [Documentation]    Click the import button and verify the import modal actually opened. The click is occasionally swallowed by the app, so this is retried by its caller.
+    Click Element    xpath=//button[contains(@class, 'home__import-btn')]
+    Wait Until Element Is Visible    xpath=//input[@placeholder='Select a share code']    5s
+
 Import Activity
     [Documentation]    Import an activity using the provided code
     [Arguments]    ${code}
+    Wait Until Element Is Not Visible    xpath=//*[contains(text(), 'Importing')]    30s
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__import-btn')]    15s
-    Click Element    xpath=//button[contains(@class, 'home__import-btn')]
-    Wait Until Element Is Visible    xpath=//input[@placeholder='Select a share code']    15s
+    Wait Until Keyword Succeeds    3x    3s    Open Import Modal
     Click Element    xpath=//input[@placeholder='Select a share code']
     Input Text    xpath=//input[@placeholder='Select a share code']    ${code}
     Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary ant-btn-lg ant-btn-block import-modal__button import-modal__button--primary')]

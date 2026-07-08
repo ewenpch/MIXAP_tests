@@ -1,6 +1,7 @@
 *** Settings ***
 Library    SeleniumLibrary
 Library    OperatingSystem
+Library    String
 Resource       ./ressources.robot
 
 *** Variables ***
@@ -14,17 +15,24 @@ Create 8 activities and share path
     Sign In    test@example.com   password123
     Sleep    15s
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__new-activity-btn')]    15s
+    Wait Until Element Is Not Visible    xpath=//div[contains(@class, 'loading-blocker__overlay')]    30s
+    ${run_suffix}=    Generate Random String    8    [LETTERS][NUMBERS]
+    Set Suite Variable    ${run_suffix}
     FOR    ${i}    IN RANGE    1    9
-        Create empty augmented activity    activité numéro ${i}
+        Create empty augmented activity    activité numéro ${i} ${run_suffix}
     END
-    Create empty path
+    ${path_title}=    Set Variable    parcours numéro 1 ${run_suffix}
+    Set Suite Variable    ${path_title}
+    Create empty path    ${path_title}
 
     FOR    ${i}    IN RANGE    1    9
-        Add Activity to Path    activité numéro ${i}
+        Add Activity to Path    activité numéro ${i} ${run_suffix}    ${path_title}
     END
     Sleep    10s
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'activity-card__action-button activity-card__action-button--sync')]    15s
-    Click Element    xpath=//button[contains(@class, 'activity-card__action-button activity-card__action-button--sync')]
+    ${path_sync_button}=    Set Variable    xpath=//h3[contains(@class, 'activity-card') and text()='${path_title}']/ancestor::div[contains(@class, 'activity-card--group')][1]//button[contains(@class, 'activity-card__action-button--sync')]
+    Wait Until Element Is Visible    ${path_sync_button}    15s
+    Scroll Element Into View    ${path_sync_button}
+    Click Element    ${path_sync_button}
 
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]    15s
     Click Element    xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]
