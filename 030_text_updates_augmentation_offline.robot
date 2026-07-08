@@ -12,6 +12,7 @@ ${URL}    https://mixap-lium-preprod.univ-lemans.fr/
 Create empty Augmented activity offline
     Open Web Application
     Maximize Browser Window
+    Go Offline
     Create Activity
 
 Select Type
