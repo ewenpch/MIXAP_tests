@@ -55,7 +55,7 @@ Open Web Application without closing
 
 Create Activity
     [Documentation]    clic sur le bouton création d'activité
-    Click Element    xpath=//button[text()='New activity']
+    Wait Until Keyword Succeeds    3x    2s    Click Element    xpath=//button[text()='New activity']
     Wait Until Element Is Visible    xpath=//div[h3[text()='Augmented activity']]
 
 Create Path
@@ -309,10 +309,39 @@ Import Activity
     Input Text    xpath=//input[@placeholder='Select a share code']    ${code}
     Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary ant-btn-lg ant-btn-block import-modal__button import-modal__button--primary')]
 
-Duplicate Activity
-    [Documentation]    Duplicate an activity using the provided title
+Open Activity Menu And Duplicate
+    [Documentation]    Click an activity card's menu button and select "Duplicate". Retried by its caller since a freshly created or duplicated card can take a moment to become fully interactive. The "Duplicate" menu item is clicked via JavaScript, filtered to the one that is actually visible, because Ant Design leaves previous dropdown instances mounted (hidden) in the DOM, which makes a plain xpath match the wrong, invisible one once a second dropdown has been opened.
     [Arguments]    ${activity_title}
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'activity-card__menu-button')]    15s
-    Click Element    xpath=//button[contains(@class, 'activity-card__menu-button')]
-    Wait Until Element Is Visible    xpath=//span[contains(@class, 'ant-dropdown-menu-title-content') and text()='Duplicate']    5s
-    Click Element    xpath=//span[contains(@class, 'ant-dropdown-menu-title-content') and text()='Duplicate']
+    ${card}=    Set Variable    xpath=//h3[contains(@class, 'activity-card') and text()='${activity_title}']/ancestor::div[3]
+    Wait Until Element Is Visible    ${card}//button[contains(@class, 'activity-card__menu-button')]    15s
+    Wait Until Element Is Not Visible    ${card}//*[contains(text(), 'Sync in progress')]    20s
+    Scroll Element Into View    ${card}//button[contains(@class, 'activity-card__menu-button')]
+    Click Element    ${card}//button[contains(@class, 'activity-card__menu-button')]
+    Sleep    1s
+    ${clicked}=    Execute Javascript    var items=[...document.querySelectorAll('.ant-dropdown-menu-title-content')].filter(function(el){return el.textContent.trim()==='Duplicate' && el.offsetParent!==null;}); if(items.length===0){return false;} items[0].click(); return true;
+    Should Be True    ${clicked}    Could not find a visible "Duplicate" menu item
+
+Duplicate Activity
+    [Documentation]    Duplicate the activity identified by the provided title. Scoped to that specific card (3rd div ancestor of its title) so it does not duplicate the wrong activity when several are visible on screen.
+    [Arguments]    ${activity_title}
+    Wait Until Keyword Succeeds    3x    2s    Open Activity Menu And Duplicate    ${activity_title}
+    Sleep    2s
+
+Create basic search and find activity
+    [Documentation]    Create a basic search and find activity with a title, instructions, snap the background and validate
+    [Arguments]    ${title}    ${instructions}
+    Create Activity
+    Select Activity Type    Search and Find
+    Next button
+    Sleep    2s
+    Edit Activity Title    ${title}
+    Edit Activity Instructions    ${instructions}
+    Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary editor__nav-button editor__nav-button--primary')]
+    Sleep    2s
+    Snap the background
+    Sleep    2s
+    Validate the image
+    Sleep    2s
+    Next button
+    Sleep    2s
+    Validation button
