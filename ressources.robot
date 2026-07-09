@@ -372,3 +372,28 @@ Create failed search and find activity
 
     Next button
     Sleep    5s
+
+Create basic pairs activity
+    [Documentation]    Create a basic pairs activity with a title, instructions, snap the background and validate
+    [Arguments]    ${title}    ${instructions}
+    Create Activity
+    Select Activity Type    Pair Association
+    Next button
+    Sleep    2s
+    Edit Activity Title    ${title}
+    Edit Activity Instructions    ${instructions}
+    Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary editor__nav-button editor__nav-button--primary')]
+    Sleep    2s
+    Wait Until Element Is Visible    xpath=//span[contains(@class, ant-upload-btn)]    15s
+    Click Element    xpath=//span[contains(@class, ant-upload-btn)]
+    Choose File   xpath=//input[@type='file']    ${EXECDIR}/assets/fakecamfeed_cortez.png
+    Sleep    2s
+    Click Element    xpath=//span[contains(@class, ant-upload-btn)]
+    Choose File   xpath=//input[@type='file']    ${EXECDIR}/assets/cat.webp
+    Sleep    2s
+    Next button
+    Sleep    2s
+    Validation button
+    Sleep    5s
+    Next button
+    Sleep    5s
