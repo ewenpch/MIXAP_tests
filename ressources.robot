@@ -480,3 +480,16 @@ Check that all layers are present and contain the expected content
     FOR    ${index}    IN RANGE    ${number_of_layers}
         Check if Layer has content    ${index}
     END
+
+Change Language
+    [Documentation]    Change the language of the application using the provided language name.
+    ### FR = Français
+    ### EN = English
+    ### DK = Dansk
+    ### GR = Ελληνικά
+    ### TR = Türkçe
+    [Arguments]    ${language_code}
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'ds-header__language-dropdown')]    5s
+    Click Element    xpath=//div[contains(@class, 'ds-header__language-dropdown')]
+    Wait Until Element Is Visible    xpath=//div[@role='option'][.//span[text()='${language_code}']]    5s
+    Click Element    xpath=//div[@role='option'][.//span[text()='${language_code}']]
