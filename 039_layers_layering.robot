@@ -25,3 +25,6 @@ Create offline activity
     Open Web Application
     Go Offline
     Create basic layers activity without validation    layers activity    layers activity instructions
+    Add multiple layers
+    Furnish layers with content
+    Check that all layers are present and contain the expected content
