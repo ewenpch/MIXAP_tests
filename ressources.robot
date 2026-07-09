@@ -83,7 +83,7 @@ Use template image
     Sleep    2s
     Wait Until Element Is Visible    xpath=//span[text()='upload image']
     Click Element    xpath=//span[text()='upload image']
-    Choose File    xpath=//input[@type='file']    ${EXECDIR}/assets/fakecamfeed_cortez.png
+    Choose File    xpath=//input[@type='file']    ${EXECDIR}/assets/cat.webp
     
 Select Activity Type
     [Documentation]    Select the activity type using a parameter
@@ -345,3 +345,30 @@ Create basic search and find activity
     Next button
     Sleep    2s
     Validation button
+    Sleep    5s
+    Next button
+    Sleep    5s
+
+Create failed search and find activity
+    [Documentation]    Create a basic search and find activity with a title, instructions, use a photo and validate
+    [Arguments]    ${title}    ${instructions}
+    Create Activity
+    Select Activity Type    Search and Find
+    Next button
+    Sleep    2s
+    Edit Activity Title    ${title}
+    Edit Activity Instructions    ${instructions}
+    Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary editor__nav-button editor__nav-button--primary')]
+    Sleep    2s
+    Use template image
+    Sleep    2s
+    Next button
+    Sleep    2s
+    Validation button
+    Sleep    5s
+
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'ant-slider-handle')]    15s
+    Drag And Drop    xpath=//div[contains(@class, 'ant-slider-handle')]    xpath=//div[contains(@id, 'three-canvas')]
+
+    Next button
+    Sleep    5s
