@@ -308,3 +308,11 @@ Import Activity
     Click Element    xpath=//input[@placeholder='Select a share code']
     Input Text    xpath=//input[@placeholder='Select a share code']    ${code}
     Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary ant-btn-lg ant-btn-block import-modal__button import-modal__button--primary')]
+
+Duplicate Activity
+    [Documentation]    Duplicate an activity using the provided title
+    [Arguments]    ${activity_title}
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'activity-card__menu-button')]    15s
+    Click Element    xpath=//button[contains(@class, 'activity-card__menu-button')]
+    Wait Until Element Is Visible    xpath=//span[contains(@class, 'ant-dropdown-menu-title-content') and text()='Duplicate']    5s
+    Click Element    xpath=//span[contains(@class, 'ant-dropdown-menu-title-content') and text()='Duplicate']
