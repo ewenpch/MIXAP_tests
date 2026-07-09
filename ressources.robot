@@ -345,3 +345,6 @@ Create basic search and find activity
     Next button
     Sleep    2s
     Validation button
+    Sleep    5s
+    Next button
+    Sleep    5s
