@@ -464,3 +464,19 @@ Furnish layers with content
         Click Element    xpath=//button[contains(@title, 'Expand Layers')] 
         Sleep    2s
     END
+
+Check if Layer has content
+    [Documentation]    Check if a specific layer has content (cat image)
+    [Arguments]    ${layer_index}
+    Click Element    xpath=//div[contains(@class, 'layers-panel__tile-name') and text()='Layer ${layer_index + 1}']
+    ${rows}=    Get WebElements    xpath=//div[contains(@class, 'auras__html-container')]
+    ${count}=   Get Length         ${rows}
+    Should Be True    ${count} == 1
+    Log    Nombre d'activités: ${count} (devrait être 1)
+
+Check that all layers are present and contain the expected content
+    [Documentation]    Check that all layers are present and contain the expected content (cat image)
+    [Arguments]    ${number_of_layers}=3
+    FOR    ${index}    IN RANGE    ${number_of_layers}
+        Check if Layer has content    ${index}
+    END
