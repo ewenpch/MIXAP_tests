@@ -55,8 +55,8 @@ Open Web Application without closing
 
 Create Activity
     [Documentation]    clic sur le bouton création d'activité
-    Wait Until Keyword Succeeds    3x    2s    Click Element    xpath=//button[text()='New activity']
-    Wait Until Element Is Visible    xpath=//div[h3[text()='Augmented activity']]
+    Wait Until Keyword Succeeds    3x    2s    Click Element    xpath=//button[@class='home__new-activity-btn' and not(contains(@class, 'home__import-btn'))]
+    Wait Until Element Is Visible    xpath=//div[@class='activity-menu__grid']
 
 Create Path
     [Documentation]    clic sur le bouton création de parcours
@@ -493,3 +493,13 @@ Change Language
     Click Element    xpath=//div[contains(@class, 'ds-header__language-dropdown')]
     Wait Until Element Is Visible    xpath=//div[@role='option'][.//span[text()='${language_code}']]    5s
     Click Element    xpath=//div[@role='option'][.//span[text()='${language_code}']]
+
+Check that the page is in French
+    [Documentation]    Check that the page is in French by verifying the presence of a specific French text.
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__new-activity-btn') and text()='Nouvelle activité']    2s
+    Change Language    English
+    Create empty augmented activity    title=Activité augmentée de test
+    Change Language    Français
+    Sleep    2s
+    Wait Until Element Is Visible    xpath=//button[text()="Nouveau parcours d'apprentissage"]   2s
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'activity-card__status-badges')]//span[text()='Brouillon local']    2s

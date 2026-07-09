@@ -13,3 +13,7 @@ Open application and change language
     Open Web Application
     Change Language    Français
     Sleep    5s
+
+Test everything is in French
+    Check that the page is in French
+    Close Browser
