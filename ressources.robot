@@ -326,3 +326,22 @@ Duplicate Activity
     [Arguments]    ${activity_title}
     Wait Until Keyword Succeeds    3x    2s    Open Activity Menu And Duplicate    ${activity_title}
     Sleep    2s
+
+Create basic search and find activity
+    [Documentation]    Create a basic search and find activity with a title, instructions, snap the background and validate
+    [Arguments]    ${title}    ${instructions}
+    Create Activity
+    Select Activity Type    Search and Find
+    Next button
+    Sleep    2s
+    Edit Activity Title    ${title}
+    Edit Activity Instructions    ${instructions}
+    Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary editor__nav-button editor__nav-button--primary')]
+    Sleep    2s
+    Snap the background
+    Sleep    2s
+    Validate the image
+    Sleep    2s
+    Next button
+    Sleep    2s
+    Validation button
