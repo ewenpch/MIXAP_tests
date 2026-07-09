@@ -397,3 +397,70 @@ Create basic pairs activity
     Sleep    5s
     Next button
     Sleep    5s
+
+Create basic layers activity
+    [Documentation]    Create a basic layers activity with a title, instructions, snap the background
+    [Arguments]    ${title}    ${instructions}
+    Create Activity
+    Select Activity Type    Information layers
+    Next button
+    Sleep    2s
+    Edit Activity Title    ${title}
+    Edit Activity Instructions    ${instructions}
+    Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary editor__nav-button editor__nav-button--primary')]
+    Sleep    2s
+    Snap the background
+    Sleep    2s
+    Validate the image
+    Sleep    2s
+    Next button
+    Sleep    2s
+    Validation button
+    Sleep    5s
+    Next button
+    Sleep    5s
+
+Create basic layers activity without validation
+    [Documentation]    Create a basic layers activity with a title, instructions, snap the background
+    [Arguments]    ${title}    ${instructions}
+    Create Activity
+    Select Activity Type    Information layers
+    Next button
+    Sleep    2s
+    Edit Activity Title    ${title}
+    Edit Activity Instructions    ${instructions}
+    Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary editor__nav-button editor__nav-button--primary')]
+    Sleep    2s
+    Snap the background
+    Sleep    2s
+    Validate the image
+    Sleep    2s
+    Next button
+    Sleep    5s
+    Validation button
+    Sleep    5s
+
+Add multiple layers
+    [Documentation]    Add multiple layers to the current activity
+    [Arguments]    ${number_of_layers}=3
+    FOR    ${index}    IN RANGE    ${number_of_layers}
+        Click Element    xpath=//button[contains(@class, 'layers-panel__add-button')]
+        Wait Until Element Is Visible    xpath=//button[contains(@class, 'layers-panel__edit-button--validate')]    15s
+        Click Element    xpath=//button[contains(@class, 'layers-panel__edit-button--validate')]
+        Sleep    2s
+    END
+
+Furnish layers with content
+    [Documentation]    Furnish each layer with content (cat image)
+    [Arguments]    ${number_of_layers}=3
+    FOR    ${index}    IN RANGE    ${number_of_layers}
+        Click Element    xpath=//div[contains(@class, 'layers-panel__tile-name') and text()='Layer ${index + 1}']
+        Click Element    xpath=//button[contains(@title, 'Image')]
+        Sleep    2s
+        Click Element    xpath=//h5[contains(@class, 'ant-typography') and text()='Click to edit...']
+        Click Element    xpath=//button[contains(@class, 'ant-btn')]
+        Choose File   xpath=//input[@type='file']    ${EXECDIR}/assets/cat.webp
+        Wait Until Element Is Visible    xpath=//button[contains(@title, 'Expand Layers')]    15s
+        Click Element    xpath=//button[contains(@title, 'Expand Layers')] 
+        Sleep    2s
+    END
