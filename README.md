@@ -270,9 +270,33 @@ Repeats the text overlay formatting checks from 030_text_updates_augmentation.ro
 Validates the single-activity cross-account sharing flow. One user creates a single activity and generates a share code through the cloud sync modal, a second user imports it using that code, and the imported activity is then launched to confirm the tracking session mounts correctly. This is the single-activity precursor to the path-sharing scenario covered by 032_load_import.robot.
 
 ## 032_load_import.robot
-Validates the full cross-account sharing and import lifecycle for a learning path. It signs in as one user, creates eight activities and an empty path, drags all eight activities into the path, then triggers the cloud sync/share flow to generate an 8-character share code. It then signs in as a second user, imports the path using that code, and launches the imported activity to confirm the tracking session mounts correctly.
+Validates the full cross-account sharing and import lifecycle for a learning path. It signs in as one user, creates one activity through the full wizard and obtains seven more by chain-duplicating it (each duplicate is made from the previous copy, not the original, so the app's automatic " (copy)" suffix keeps stacking into unique titles), creates an empty path, drags all eight activities into it, then triggers the cloud sync/share flow to generate an 8-character share code. It then signs in as a second user, imports the path using that code, and launches the imported activity to confirm the tracking session mounts correctly.
 
-Because the test accounts accumulate activities and paths across repeated runs (there is no teardown step and the accounts cannot be cleared), every activity and path title is suffixed with a random string generated at runtime so that XPath lookups by title never collide with stale data from a previous execution. The drag-and-drop target and the sync button are both scoped to the freshly created path's own card (`ancestor::div[contains(@class, 'activity-card--group')]`) rather than matching the first matching element on the page, since the account's home grid can contain several same-named paths from earlier runs. The activity card click and the import modal both retry a few times (`Wait Until Keyword Succeeds`) to absorb layout shifts and occasional swallowed clicks caused by the growing account size. The browser is also launched with Chrome's password leak detection and password manager disabled, since the test account intentionally uses a simple, non-sensitive password that would otherwise trigger a native "compromised password" prompt and kill the WebDriver session.
+Because the test accounts accumulate activities and paths across repeated runs (there is no teardown step and the accounts cannot be cleared), every activity and path title is suffixed with a random string generated at runtime so that XPath lookups by title never collide with stale data from a previous execution. The drag-and-drop target, the sync button, and the duplicate menu button are all scoped to the specific card they belong to (via its own `activity-card--group`/`activity-card--augmentation` ancestor, or the 3rd `div` ancestor of its title) rather than matching the first matching element on the page, since the account's home grid can contain several same-named cards from earlier runs. Interactions that are prone to layout shifts or swallowed clicks on a large, slow-loading account (the initial card click, the duplicate menu, the import modal) are retried with `Wait Until Keyword Succeeds`. The browser is also launched with Chrome's password leak detection and password manager disabled, since the test account intentionally uses a simple, non-sensitive password that would otherwise trigger a native "compromised password" prompt and kill the WebDriver session.
 
 ## 033_filter_basic.robot
 Validates the home screen's type filter control. It creates one path and one activity, opens the filter panel, and selects the "activity" filter option to assert exactly one activity-typed card remains visible, then switches to the "path" filter option and asserts exactly one path-typed card remains visible.
+
+## 034_duplicate.robot
+Validates the activity duplication feature. It creates a single empty activity, duplicates it through its card's menu, and asserts that the home grid now shows two activity cards, confirming the duplicate was created successfully.
+
+## 035_search_and_find_success.robot
+Validates the successful completion path of a Search and Find activity, both online and offline. After creating the activity, it asserts that the validation pill shown once the target is found reads exactly "Well done!".
+
+## 036_search_and_find_fail.robot
+Validates the failure path of a Search and Find activity, both online and offline, using a deliberately mismatched target/detection setup. It asserts that the validation pill reads "Too bad!" instead of the success message, confirming the activity correctly reports a missed detection.
+
+## 037_pairs.robot
+Validates the creation of a Pair Association activity, both online and offline. After entering the title and instructions, it fills the two side-by-side marker slots ("Marker 1" and "Marker 2") by uploading a distinct local image to each one, then checks for the "Well done!" validation pill. Each marker's upload control is scoped by the text of its own `mk-upload__marker-slot-label` (`Marker 1` / `Marker 2`), since both slots share identical classes and only differ by that label.
+
+## 038_layers.robot
+Validates the creation of a blank Information Layers activity, both online and offline, confirming the basic layers wizard completes without errors.
+
+## 039_layers_layering.robot
+Extends the Information Layers coverage by creating an activity with multiple layers, both online and offline: it adds several layers, populates each one with content, and verifies that every layer is present and holds the expected content once the activity is built.
+
+## 040_verify_language_changes.robot
+Validates the application's language switcher across five locales (French, English, Danish, Greek, Turkish). For each language, it opens the language dropdown, selects the target locale by its native name, and checks that known UI text has been translated accordingly, confirming the i18n switch takes effect for every supported language in the list.
+
+## 041_audio_tool.robot
+Validates the Audio overlay tool's two content sources on an Augmented Activity. The microphone scenario opens the Audio tool, starts a recording using Chrome's fake microphone feed (`--use-file-for-fake-audio-capture`, configured in `Set Chrome Options` to play back `assets/moo1.wav`), stops the recording, confirms it, and plays it back. The upload scenario instead attaches a local audio file directly to the tool's hidden file input (`id=basic_file`), bypassing the native OS file picker that Selenium cannot drive. The record/pause button is located by its Material icon `data-testid` (`CircleIcon` while idle, `PauseIcon` while recording) rather than by class, since both states share the exact same button element and CSS classes.
