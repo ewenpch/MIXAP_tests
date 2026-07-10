@@ -24,27 +24,31 @@ Create 8 activities and share path
     # validation...). The other 7 are obtained by duplicating the previous one: the app
     # appends " (copy)" to the source title on each duplication, so chaining the duplicates
     # (each one duplicated from the previous copy, not from the original) keeps every title
-    # unique without needing to rename anything.
-    ${activity_titles}=    Create List
+    # unique without needing to rename anything. Each card's unique data-id is captured right
+    # after it's created/duplicated, so every step from here on targets cards by id instead of
+    # by title text - immune to duplicate or stale-data titles elsewhere on the page.
+    ${activity_ids}=    Create List
     ${current_title}=    Set Variable    activité numéro 1 ${run_suffix}
     Create empty augmented activity    ${current_title}
-    Append To List    ${activity_titles}    ${current_title}
+    ${current_id}=    Get Card Data Id    ${current_title}
+    Append To List    ${activity_ids}    ${current_id}
 
     FOR    ${i}    IN RANGE    1    8
         Duplicate Activity    ${current_title}
         ${current_title}=    Set Variable    ${current_title} (copy)
-        Append To List    ${activity_titles}    ${current_title}
+        ${current_id}=    Get Card Data Id    ${current_title}
+        Append To List    ${activity_ids}    ${current_id}
     END
 
     ${path_title}=    Set Variable    parcours numéro 1 ${run_suffix}
-    Set Suite Variable    ${path_title}
     Create empty path    ${path_title}
+    ${path_id}=    Get Card Data Id    ${path_title}
 
-    FOR    ${activity_title}    IN    @{activity_titles}
-        Add Activity to Path    ${activity_title}    ${path_title}
+    FOR    ${activity_id}    IN    @{activity_ids}
+        Add Activity to Path By Id    ${activity_id}    ${path_id}
     END
     Sleep    10s
-    ${path_sync_button}=    Set Variable    xpath=//h3[contains(@class, 'activity-card') and text()='${path_title}']/ancestor::div[contains(@class, 'activity-card--group')][1]//button[contains(@class, 'activity-card__action-button--sync')]
+    ${path_sync_button}=    Set Variable    xpath=//div[contains(@class, 'activity-card') and @data-id='${path_id}']//button[contains(@class, 'activity-card__action-button--sync')]
     Wait Until Element Is Visible    ${path_sync_button}    15s
     Scroll Element Into View    ${path_sync_button}
     Click Element    ${path_sync_button}

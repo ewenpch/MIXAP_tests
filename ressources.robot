@@ -55,13 +55,15 @@ Open Web Application without closing
     Wait Until Element Is Visible    xpath=//button[text()='New activity']
 
 Create Activity
-    [Documentation]    clic sur le bouton création d'activité
-    Wait Until Keyword Succeeds    3x    2s    Click Element    xpath=//button[@class='home__new-activity-btn' and not(contains(@class, 'home__import-btn'))]
+    [Documentation]    clic sur le bouton création d'activité. Clicked via JavaScript to avoid "element click intercepted" failures from transient overlays (tooltips, badges) near the top of the page.
+    Wait Until Element Is Visible    xpath=//button[@class='home__new-activity-btn' and not(contains(@class, 'home__import-btn'))]    15s
+    Execute Javascript    document.evaluate("//button[@class='home__new-activity-btn' and not(contains(@class, 'home__import-btn'))]", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click();
     Wait Until Element Is Visible    xpath=//div[@class='activity-menu__grid']
 
 Create Path
-    [Documentation]    clic sur le bouton création de parcours
-    Click Element    xpath=//button[text()='New learning path']
+    [Documentation]    clic sur le bouton création de parcours. Clicked via JavaScript to avoid "element click intercepted" failures from transient overlays (tooltips, badges) near the top of the page - this button shares the same "home__new-activity-btn" base class as "New activity", which is why the interception error can look like it's about the wrong button.
+    Wait Until Element Is Visible    xpath=//button[text()='New learning path']    15s
+    Execute Javascript    document.evaluate("//button[text()='New learning path']", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click();
     Wait Until Element Is Visible    xpath=//div[h3[text()='Free Exploration Path']]
 
 Next button
@@ -244,11 +246,11 @@ Create empty validation
 
 Create empty path
     [Documentation]    Create an empty path with a title and instructions
-    [Arguments]    ${title}=parcours numéro 1
+    [Arguments]    ${title}=parcours numéro 1    ${instructions}=instruction relative au parcours numéro 1
     Create Path
     Select Path Type    Free Exploration Path
     Edit Path Title    ${title}
-    Edit Path Instructions    instruction relative au parcours numéro 1
+    Edit Path Instructions    ${instructions}
     Next button
     Sleep    2s
     Wait Until Element Is Visible    xpath=//div[h3[contains(@class, 'activity-card__title activity-card__title--large-light') and text()='${title}']]    15s
@@ -281,6 +283,33 @@ Add Activity to Path
         ${drop_target}=    Set Variable    xpath=//*[contains(@class,'activity-card--group')]/*[contains(@class,'activity-card__content')]
     END
     Drag And Drop    xpath=//div[h3[contains(@class, 'activity-card') and text()='${activity_title}']]    ${drop_target}
+    Sleep    4s
+
+Get Card Data Id
+    [Documentation]    Return the unique "data-id" of the activity/path card identified by the provided title. Capture this right after creating/duplicating a card so later steps can target it precisely by id instead of matching by title, which can collide with duplicates or stale data from earlier runs.
+    [Arguments]    ${card_title}
+    ${card_id}=    Get Element Attribute    xpath=//h3[contains(@class, 'activity-card') and text()='${card_title}']/ancestor::div[@data-id][1]    data-id
+    RETURN    ${card_id}
+
+Click Activity Card By Id
+    [Documentation]    Scroll to and click an activity/path card identified by its data-id. Retried by its caller since the layout can shift on large accounts.
+    [Arguments]    ${card_id}
+    ${card}=    Set Variable    xpath=//div[contains(@class, 'activity-card') and @data-id='${card_id}']
+    Scroll Element Into View    ${card}
+    Click Element    ${card}
+
+Add Activity to Path By Id
+    [Documentation]    Add an activity to a path, both identified by their unique "data-id" rather than title text. Immune to duplicate or stale-data titles anywhere else on the page. The drag is started from the card's title-wrapper (not the full card) because Selenium's synthetic drag grabs the element's center point, and the full card's center can land on an action button (like/sync/menu) instead of empty space, silently breaking the drag. The drop itself is done as Mouse Down / Mouse Over / Sleep / Mouse Up instead of the single-shot "Drag And Drop" keyword, because the app needs a brief hover over the drop zone to register the dragover state before the mouse is released - "Drag And Drop" releases immediately after arriving, which is too fast for it to pick up.
+    [Arguments]    ${activity_id}    ${path_id}
+    ${activity_card}=    Set Variable    xpath=//div[contains(@class, 'activity-card') and @data-id='${activity_id}']
+    ${drag_source}=    Set Variable    ${activity_card}//div[contains(@class,'activity-card__title-wrapper')]
+    ${drop_target}=    Set Variable    xpath=//div[contains(@class, 'activity-card') and @data-id='${path_id}']/*[contains(@class,'activity-card__content')]
+    Wait Until Element Is Visible    ${activity_card}    15s
+    Wait Until Keyword Succeeds    3x    2s    Click Activity Card By Id    ${activity_id}
+    Mouse Down    ${drag_source}
+    Mouse Over    ${drop_target}
+    Sleep    1s
+    Mouse Up    ${drop_target}
     Sleep    4s
 
 Sign In
@@ -327,6 +356,32 @@ Duplicate Activity
     [Arguments]    ${activity_title}
     Wait Until Keyword Succeeds    3x    2s    Open Activity Menu And Duplicate    ${activity_title}
     Sleep    2s
+
+Delete Activity Or Path
+    [Documentation]    Delete the activity or path card identified by the provided title. Every activity/path card carries a unique "data-id" attribute, so this first captures that id from the card matching the title, then scopes the menu-open and delete-confirm steps to that exact "data-id" instead of the title. This keeps the deletion correct even when several look-alike cards (same title, duplicates, stale data from earlier runs) are visible on screen at once.
+    [Arguments]    ${card_title}
+    ${card_id}=    Get Element Attribute    xpath=//h3[contains(@class, 'activity-card') and text()='${card_title}']/ancestor::div[@data-id][1]    data-id
+    ${card}=    Set Variable    xpath=//div[contains(@class, 'activity-card') and @data-id='${card_id}']
+    Wait Until Element Is Visible    ${card}//button[contains(@class, 'activity-card__menu-button')]    15s
+    Scroll Element Into View    ${card}//button[contains(@class, 'activity-card__menu-button')]
+    Click Element    ${card}//button[contains(@class, 'activity-card__menu-button')]
+    Sleep    1s
+    ${clicked}=    Execute Javascript    var items=[...document.querySelectorAll('.ant-dropdown-menu-title-content')].filter(function(el){return el.textContent.trim()==='Delete' && el.offsetParent!==null;}); if(items.length===0){return false;} items[0].click(); return true;
+    Should Be True    ${clicked}    Could not find a visible "Delete" menu item
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'confirmation-dialog__footer')]//button[text()='Delete']    15s
+    Click Element    xpath=//div[contains(@class, 'confirmation-dialog__footer')]//button[text()='Delete']
+    RETURN    ${card_id}
+
+Restore Activity Or Path
+    [Documentation]    Open the Trash and restore the card identified by its "data-id" (as returned by "Delete Activity Or Path"). Scoping the restore button by data-id keeps this correct even if the trash holds several look-alike deleted cards.
+    [Arguments]    ${card_id}
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'ds-header__download-button') and @title='Trash']    15s
+    Click Element    xpath=//button[contains(@class, 'ds-header__download-button') and @title='Trash']
+    ${card}=    Set Variable    xpath=//div[contains(@class, 'activity-card') and @data-id='${card_id}']
+    ${restore_button}=    Set Variable    ${card}//div[contains(@class, 'activity-card__top-actions')]//button[contains(@class, 'activity-card__action-button--restore')]
+    Wait Until Element Is Visible    ${restore_button}    15s
+    Scroll Element Into View    ${restore_button}
+    Click Element    ${restore_button}
 
 Create basic search and find activity
     [Documentation]    Create a basic search and find activity with a title, instructions, snap the background and validate
