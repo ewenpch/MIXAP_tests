@@ -20,6 +20,7 @@ Set Chrome Options
     Call Method    ${options}    add_argument    --use-fake-ui-for-media-stream
     Call Method    ${options}    add_argument    --use-fake-device-for-media-stream    #display a fake video if the machine doesnt have any camera
     Call Method    ${options}    add_argument    --use-file-for-fake-video-capture\=${EXECDIR}/assets/fakecamfeed_cortez.y4m
+    Call Method    ${options}    add_argument    --use-file-for-fake-audio-capture\=${EXECDIR}/assets/moo1.wav    #plays this wav file as the fake microphone input
     ${prefs}=    Create Dictionary
     ...    profile.default_content_setting_values.media_stream_camera=1
     ...    profile.default_content_setting_values.media_stream_mic=1
