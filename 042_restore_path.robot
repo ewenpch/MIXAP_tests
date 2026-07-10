@@ -6,6 +6,7 @@ Resource       ./ressources.robot
 *** Variables ***
 
 ${URL}    https://mixap-lium-preprod.univ-lemans.fr/
+${path_id}    value
 
 
 *** Test Cases ***
