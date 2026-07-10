@@ -48,6 +48,29 @@ Create 8 activities and share path
         Add Activity to Path By Id    ${activity_id}    ${path_id}
     END
     Sleep    10s
+
+    # Functional check that the 8 activities actually landed in the path (not just that no
+    # exception was raised while dragging them - the drop can silently fail to register even
+    # when the drag itself completes without error). Opens the path's content drawer - reached
+    # by clicking its card body, not the title-arrow-button which instead launches the AR player
+    # - finds which activities (if any) didn't land, retries only those, then asserts all 8 are
+    # present.
+    Open Path Content Drawer    ${path_id}
+    ${missing_ids}=    Get Missing Activity Ids    ${activity_ids}
+    Close Path Content Drawer
+
+    IF    $missing_ids
+        Log    Retrying activities that did not land on the first drop: ${missing_ids}    WARN
+        FOR    ${missing_id}    IN    @{missing_ids}
+            Add Activity to Path By Id    ${missing_id}    ${path_id}
+        END
+        Sleep    5s
+    END
+
+    Open Path Content Drawer    ${path_id}
+    Path Should Contain Activities    ${activity_ids}
+    Close Path Content Drawer
+
     ${path_sync_button}=    Set Variable    xpath=//div[contains(@class, 'activity-card') and @data-id='${path_id}']//button[contains(@class, 'activity-card__action-button--sync')]
     Wait Until Element Is Visible    ${path_sync_button}    15s
     Scroll Element Into View    ${path_sync_button}

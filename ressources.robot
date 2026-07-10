@@ -1,5 +1,6 @@
 *** Settings ***
 Library    SeleniumLibrary
+Library    Collections
 
 *** Variables ***
 ${URL}    https://mixap-lium-preprod.univ-lemans.fr/
@@ -311,6 +312,39 @@ Add Activity to Path By Id
     Sleep    1s
     Mouse Up    ${drop_target}
     Sleep    4s
+
+Open Path Content Drawer
+    [Documentation]    Open the path's content management drawer, identified by its "data-id". Click the card's title-wrapper (not the title-arrow-button, which instead launches the AR player) to reach it.
+    [Arguments]    ${path_id}
+    ${path_card}=    Set Variable    xpath=//div[contains(@class, 'activity-card') and @data-id='${path_id}']
+    Scroll Element Into View    ${path_card}
+    Click Element    ${path_card}//div[contains(@class,'activity-card__title-wrapper')]
+    Wait Until Element Is Visible    xpath=//div[contains(@class,'path-slider__content')]    15s
+
+Close Path Content Drawer
+    [Documentation]    Close the path content drawer opened by "Open Path Content Drawer". Waits a few seconds after closing since the home grid re-renders when the drawer closes, and interacting with cards too soon can find them momentarily missing.
+    Click Element    xpath=//button[contains(@class,'path-slider__close-button')]
+    Sleep    3s
+
+Path Should Contain Activities
+    [Documentation]    Assert that every activity id in the given list is present in the currently open path content drawer. Call "Open Path Content Drawer" first.
+    [Arguments]    ${activity_ids}
+    ${expected_count}=    Get Length    ${activity_ids}
+    ${id_conditions}=    Evaluate    " or ".join(["@data-id='%s'" % i for i in $activity_ids])
+    ${actual_count}=    Get Element Count    xpath=//div[contains(@class,'path-slider__content')]//*[${id_conditions}]
+    Should Be Equal As Integers    ${actual_count}    ${expected_count}    msg=Expected ${expected_count} activities in the path but found ${actual_count}
+
+Get Missing Activity Ids
+    [Documentation]    Return the subset of the given activity ids that are NOT present in the currently open path content drawer. Call "Open Path Content Drawer" first.
+    [Arguments]    ${activity_ids}
+    ${missing}=    Create List
+    FOR    ${activity_id}    IN    @{activity_ids}
+        ${found_count}=    Get Element Count    xpath=//div[contains(@class,'path-slider__content')]//*[@data-id='${activity_id}']
+        IF    ${found_count} == 0
+            Append To List    ${missing}    ${activity_id}
+        END
+    END
+    RETURN    ${missing}
 
 Sign In
     [Documentation]    Sign in to the application using the provided email and password
