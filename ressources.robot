@@ -503,3 +503,41 @@ Check that the page is in French
     Sleep    2s
     Wait Until Element Is Visible    xpath=//button[text()="Nouveau parcours d'apprentissage"]   2s
     Wait Until Element Is Visible    xpath=//div[contains(@class, 'activity-card__status-badges')]//span[text()='Brouillon local']    2s
+
+Check that the page is in English
+    [Documentation]    Check that the page is in English by verifying the presence of a specific English text.
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__new-activity-btn') and text()='New activity']    2s
+    Create empty augmented activity    title=Test Augmented Activity
+    Sleep    2s
+    Wait Until Element Is Visible    xpath=//button[text()="New learning path"]   2s
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'activity-card__status-badges')]//span[text()='Local draft']    2s
+
+Check that the page is in Danish
+    [Documentation]    Check that the page is in Danish by verifying the presence of a specific Danish text.
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__new-activity-btn') and text()='Ny aktivitet']    2s
+    Change Language    English
+    Create empty augmented activity    title=Test Forstærket Aktivitet
+    Change Language    Dansk
+    Sleep    2s
+    Wait Until Element Is Visible    xpath=//button[text()="Ny læringssti"]   2s
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'activity-card__status-badges')]//span[text()='Lokal kladde']    2s
+
+Check that the page is in Greek
+    [Documentation]    Check that the page is in Greek by verifying the presence of a specific Greek text.
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__new-activity-btn') and text()='Νέα δραστηριότητα']    2s
+    Change Language    English
+    Create empty augmented activity    title=Δοκιμή Επαυξημένης Δραστηριότητας
+    Change Language    Ελληνικά
+    Sleep    2s
+    Wait Until Element Is Visible    xpath=//button[text()="Νέα διαδρομή μάθησης"]   2s
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'activity-card__status-badges')]//span[text()='Τοπικό προσχέδιο']    2s
+
+Check that the page is in Turkish
+    [Documentation]    Check that the page is in Turkish by verifying the presence of a specific Turkish text.
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__new-activity-btn') and text()='Yeni etkinlik']    2s
+    Change Language    English
+    Create empty augmented activity    title=Test Artırılmış Etkinlik
+    Change Language    Türkçe
+    Sleep    2s
+    Wait Until Element Is Visible    xpath=//button[text()="Yeni öğrenme yolu"]   2s
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'activity-card__status-badges')]//span[text()='Yerel taslak']    2s
