@@ -14,8 +14,5 @@ Create activity
     Create empty augmented activity   activité numéro 1
 
 Synchronize activity
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'activity-card__action-button activity-card__action-button--sync')]    15s
-    Click Element    xpath=//button[contains(@class, 'activity-card__action-button activity-card__action-button--sync')]
-    Sleep    5s
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'activity-card__action-button activity-card__action-button--sync uploaded')]    15s
+    Synchronize Activity
     Close Browser

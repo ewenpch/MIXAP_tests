@@ -125,14 +125,16 @@ Wait For Detection Or Log Miss
     Run Keyword If    '${status}' == 'FAIL'    Log    ⚠️ Expected behavior: The element is still visible after 25s miss detection.    WARN
 
 Add Text To Augmentation
-    [Documentation]    Add a text overlay to the currently open augmentation, using the provided text content.
-    [Arguments]    ${text}=mon texte par défaut
+    [Documentation]    Add a text overlay to the currently open augmentation, using the provided text content. Set ${click_next}=${False} when reopening an already-published activity via "Reopen Activity Editor" - there is no further wizard step to advance to there, so close the editor explicitly afterwards (e.g. with "Click home button") instead.
+    [Arguments]    ${text}=mon texte par défaut    ${click_next}=${True}
     Wait Until Element Is Visible    xpath=//button[@title='Text']    15s
     Click Element    xpath=//button[@title='Text']
     Wait Until Element Is Visible    xpath=//textarea[@placeholder='Edit your text...']    15s
     Click Element    xpath=//textarea[@placeholder='Edit your text...']
     Input Text    xpath=//textarea[@placeholder='Edit your text...']    ${text}
-    Next button
+    IF    ${click_next}
+        Next button
+    END
     Sleep    2s
 
 Add Image To Augmentation
@@ -472,7 +474,7 @@ Get Missing Activity Ids
     RETURN    ${missing}
 
 Sign In
-    [Documentation]    Sign in to the application using the provided email and password
+    [Documentation]    Sign in to the application using the provided email and password. Waits out the "loading-blocker" overlay before returning - the shared test accounts accumulate a lot of activities/paths across repeated runs, and the initial sync after login can take a while, during which the overlay intercepts clicks on anything underneath it (e.g. "New activity").
     [Arguments]    ${email}    ${password}
     Wait Until Element Is Visible    xpath=//button[.//span[contains(@class, 'anticon anticon-user')]]    15s
     Click Element    xpath=//button[.//span[contains(@class, 'anticon anticon-user')]]
@@ -482,6 +484,7 @@ Sign In
     Input Text    xpath=//input[@placeholder='••••••••']    ${password}
     Click Element    xpath=//button[text()='Continue']
     Sleep    5s
+    Wait Until Element Is Not Visible    xpath=//div[contains(@class, 'loading-blocker__overlay')]    60s
 
 Sign Up
     [Documentation]    Sign up for a new account using the provided username, email and password
@@ -501,6 +504,20 @@ Open Import Modal
     [Documentation]    Click the import button and verify the import modal actually opened. The click is occasionally swallowed by the app, so this is retried by its caller.
     Click Element    xpath=//button[contains(@class, 'home__import-btn')]
     Wait Until Element Is Visible    xpath=//input[@placeholder='Select a share code']    5s
+
+Synchronize Activity
+    [Documentation]    Click the currently visible activity/path card's sync button and wait for the upload to complete (the button gains the "uploaded" class once done). Assumes a single relevant sync button is visible on the page - scope the caller's context (e.g. just after creating/editing one activity) accordingly.
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'activity-card__action-button activity-card__action-button--sync')]    15s
+    Click Element    xpath=//button[contains(@class, 'activity-card__action-button activity-card__action-button--sync')]
+    Sleep    5s
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'activity-card__action-button activity-card__action-button--sync uploaded')]    15s
+
+Generate Share Code
+    [Documentation]    Synchronize the currently visible activity/path, open its sharing panel and return the read-only share code. Verified live: the "Read-only" tab is active by default and already displays a "<code>" element with the share code - no "generate"/confirm click needed (that button belongs to the inactive "Template" tab, which is why waiting on it used to time out).
+    Synchronize Activity
+    Wait Until Element Is Visible    xpath=//code    30s
+    ${code}=    Get Text    xpath=//code
+    RETURN    ${code}
 
 Import Activity
     [Documentation]    Import an activity using the provided code
@@ -529,6 +546,40 @@ Duplicate Activity
     [Arguments]    ${activity_title}
     Wait Until Keyword Succeeds    3x    2s    Open Activity Menu And Duplicate    ${activity_title}
     Sleep    2s
+
+Open Activity Menu And Edit
+    [Documentation]    Click an activity card's menu button and select "Edit" to reopen it in the editor. Mirrors "Open Activity Menu And Duplicate" for the same reasons (a fresh/duplicated card can take a moment to become interactive, and the "Edit" menu item is clicked via JavaScript filtered to the one that is actually visible, since Ant Design leaves previous dropdown instances mounted/hidden in the DOM).
+    [Arguments]    ${activity_title}
+    Wait Until Element Is Visible    xpath=//h3[contains(@class, 'activity-card') and text()='${activity_title}']    30s
+    ${card}=    Set Variable    xpath=//h3[contains(@class, 'activity-card') and text()='${activity_title}']/ancestor::div[3]
+    Wait Until Element Is Visible    ${card}//button[contains(@class, 'activity-card__menu-button')]    30s
+    Wait Until Element Is Not Visible    ${card}//*[contains(text(), 'Sync in progress')]    20s
+    Scroll Element Into View    ${card}//button[contains(@class, 'activity-card__menu-button')]
+    Click Element    ${card}//button[contains(@class, 'activity-card__menu-button')]
+    Sleep    1s
+    ${clicked}=    Execute Javascript    var items=[...document.querySelectorAll('.ant-dropdown-menu-title-content')].filter(function(el){return el.textContent.trim()==='Edit' && el.offsetParent!==null;}); if(items.length===0){return false;} items[0].click(); return true;
+    Should Be True    ${clicked}    Could not find a visible "Edit" menu item
+
+Find And Open Activity Menu And Edit
+    [Documentation]    Reload the page and then attempt "Open Activity Menu And Edit". Used as the retried action in "Reopen Activity Editor" - a just-created/just-synced activity can take a while to show up in the activity list on a fresh sign-in, and simply re-querying the same already-loaded page (without reloading) never gives it a chance to catch up.
+    [Arguments]    ${activity_title}
+    Reload Page
+    Wait Until Element Is Not Visible    xpath=//div[contains(@class, 'loading-blocker__overlay')]    30s
+    Open Activity Menu And Edit    ${activity_title}
+
+Reopen Activity Editor
+    [Documentation]    Reopen an existing activity identified by its title (via its card menu's "Edit" action) and step through the metadata pages to reach the augmentation canvas, ready to add more content with keywords like "Add Text To Augmentation". Verified live: unlike the single combined page used during initial creation, the reopened editor paginates title/instructions/description across separate "Next" clicks before reaching the "#three-canvas" board - if the app changes that step count this is the first place to check.
+    [Arguments]    ${activity_title}
+    Wait Until Keyword Succeeds    8x    15s    Find And Open Activity Menu And Edit    ${activity_title}
+    Wait Until Element Is Visible    xpath=//*[contains(@class, 'editor__header-title')]    15s
+    Sleep    2s
+    Next button
+    Sleep    2s
+    Next button
+    Sleep    2s
+    Next button
+    Sleep    2s
+    Wait Until Element Is Visible    xpath=//div[@id='three-canvas']    15s
 
 Delete Activity Or Path
     [Documentation]    Delete the activity or path card identified by the provided title. Every activity/path card carries a unique "data-id" attribute, so this first captures that id from the card matching the title, then scopes the menu-open and delete-confirm steps to that exact "data-id" instead of the title. This keeps the deletion correct even when several look-alike cards (same title, duplicates, stale data from earlier runs) are visible on screen at once.

@@ -76,13 +76,10 @@ Create 8 activities and share path
 
     Sleep    15s
 
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]    15s
-    Click Element    xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]
-
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary ant-btn-dangerous')]    15s
-    Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary ant-btn-dangerous')]
-
-    Wait Until Element Is Visible    xpath=//code    15s
+    # The "Read-only" tab is active by default and already shows a "<code>" element with the
+    # share code - no "generate"/confirm click needed there (that button belongs to the inactive
+    # "Template" tab).
+    Wait Until Element Is Visible    xpath=//code    30s
     ${sharecode}=    Get Text    xpath=//code
     Set Suite Variable    ${sharecode}
 
