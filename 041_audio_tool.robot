@@ -3,21 +3,16 @@ Library    SeleniumLibrary
 Library    OperatingSystem
 Resource       ./ressources.robot
 
-*** Variables ***
-
-${URL}    https://mixap-lium-preprod.univ-lemans.fr/
-
-
-*** Test Cases ***
-Open application and create an empty activity - for microphone test
+*** Keywords ***
+Create Empty Augmented Activity For Audio Test
+    [Documentation]    Create and snap the background of the "Audio Tool Test" activity, stopping right after validation so the audio tool can be exercised without navigating away.
     Open Web Application
     Create Activity
     Select Activity Type    Augmented activity
     Next button
     Sleep    2s
-    Wait Until Element Is Visible    xpath=//input[contains(@class, 'activity-view__input--title')]    5s
-    Input Text    xpath=//input[contains(@class, 'activity-view__input--title')]    Audio Tool Test
-    Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary editor__nav-button editor__nav-button--primary')]
+    Edit Activity Title    Audio Tool Test
+    Next button
     Sleep    2s
     Snap the background
     Sleep    5s
@@ -27,6 +22,10 @@ Open application and create an empty activity - for microphone test
     Sleep    2s
     Validation button
     Sleep    2s
+
+*** Test Cases ***
+Open application and create an empty activity - for microphone test
+    Create Empty Augmented Activity For Audio Test
 
 Select the audio tool and use Microphone
     Click Element    xpath=//button[contains(@title, 'Audio')]
@@ -45,23 +44,7 @@ Select the audio tool and use Microphone
     Close Browser
 
 Open application and create an empty activity - for upload test
-    Open Web Application
-    Create Activity
-    Select Activity Type    Augmented activity
-    Next button
-    Sleep    2s
-    Wait Until Element Is Visible    xpath=//input[contains(@class, 'activity-view__input--title')]    5s
-    Input Text    xpath=//input[contains(@class, 'activity-view__input--title')]    Audio Tool Test
-    Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary editor__nav-button editor__nav-button--primary')]
-    Sleep    2s
-    Snap the background
-    Sleep    5s
-    Validate the image
-    Sleep    2s
-    Next button
-    Sleep    2s
-    Validation button
-    Sleep    2s
+    Create Empty Augmented Activity For Audio Test
 
 Select the audio tool and upload a file
     Click Element    xpath=//button[contains(@title, 'Audio')]

@@ -3,11 +3,6 @@ Library    SeleniumLibrary
 Library    OperatingSystem
 Resource       ./ressources.robot
 
-*** Variables ***
-
-${URL}    https://mixap-lium-preprod.univ-lemans.fr/
-
-
 *** Test Cases ***
 Create empty augmented activity online
     Open Web Application

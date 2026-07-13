@@ -3,11 +3,6 @@ Library    SeleniumLibrary
 Library    OperatingSystem
 Resource       ./ressources.robot
 
-*** Variables ***
-
-${URL}    https://mixap-lium-preprod.univ-lemans.fr/
-
-
 *** Test Cases ***
 Create empty augmented activity offline
     Open Web Application
@@ -20,8 +15,6 @@ Select Type
 
 Edit activity details
     Edit Activity Title    activité numéro 1
-    #Edit Activity Instructions    instruction relative à l'activité numéro 1
-    #Edit Activity Description    description de l'activité numéro 1
 
 Snap the background
     Next button
@@ -32,27 +25,12 @@ Snap the background
     Next button
     Sleep    2s
     Validation button
-    #Next button
+
 Add audio to the augmentation
-    Wait Until Element Is Visible    xpath=//button[@title='Audio']    15s
-    Click Element    xpath=//button[@title='Audio']
-
-    Wait Until Element Is Visible    xpath=//div[contains(@class, 'css-aj0z9y')]    15s
-    Click Element    xpath=//div[contains(@class, 'css-aj0z9y')]
-
-    Choose File    xpath=//input[@type='file']    ${EXECDIR}/tests/assets/1645.mp3
-    Wait Until Element Is Visible    xpath=//div[contains(@class, 'css-14q5elh')]    10s
-    Click Element    xpath=//div[contains(@class, 'css-14q5elh')]
-    Next button
+    Add Audio To Augmentation
 
 display augmented activity
     Sleep    2s
-    ${status}    ${message}=    Run Keyword And Ignore Error    Wait for detection
-    Run Keyword If    '${status}' == 'FAIL'    Log    ⚠️ Expected behavior: The element is still visible after 25s miss detection.    WARN
-    #IF Element Is Visible    xpath=//div[contains(@class, 'ant-notification-notice-wrapper')]
-    #    Click Element    xpath=//a[contains(@class, 'ant-notification-notice-close')]
-    #END
+    Wait For Detection Or Log Miss
     Click home button
-#    sleep     20s     #used to watch the result can be commentend if necessary
-
     Close Browser

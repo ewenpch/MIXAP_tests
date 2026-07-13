@@ -3,10 +3,6 @@ Library    SeleniumLibrary
 Library    OperatingSystem
 Resource       ./ressources.robot
 
-*** Variables ***
-
-${URL}    https://mixap-lium-preprod.univ-lemans.fr/
-
 *** Test Cases ***
 Create a path and an activity
     Open Web Application
@@ -19,7 +15,7 @@ Filter activities and paths
 
     Wait Until Element Is Visible    xpath=//input[@value='activity']/ancestor::label    15s
     Click Element    xpath=//input[@value='activity']/ancestor::label
-    
+
     ## Check that only activities are displayed
     ${rows}=    Get WebElements    xpath=//div[contains(@class, 'activity-card__title')]
     ${count}=   Get Length         ${rows}

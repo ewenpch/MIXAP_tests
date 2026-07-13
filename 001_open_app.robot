@@ -1,18 +1,10 @@
 *** Settings ***
 Library    SeleniumLibrary
-
-*** Variables ***
-${URL}    https://mixap-lium-preprod.univ-lemans.fr/
+Resource       ./ressources.robot
 
 *** Test Cases ***
 Open Web Application
-    Open Browser    ${URL}    chrome
-    Maximize Browser Window
-    #Sleep    2
-    #Click Element    id=details-button
-    #Sleep    2
-    #Click Element    id=proceed-link
-
+    Open Web Application Without Fake Media
     Title Should Be    MIXAP
-    Sleep    5   # Attend 5 secondes pour vérifier si la page s'ouvre correctement
+    Sleep    5s   # Attend 5 secondes pour vérifier si la page s'ouvre correctement
     Close All Browsers
