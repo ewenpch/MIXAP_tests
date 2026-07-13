@@ -3,10 +3,6 @@ Library    SeleniumLibrary
 Library    OperatingSystem
 Resource       ./ressources.robot
 
-*** Variables ***
-
-${URL}    https://mixap-lium-preprod.univ-lemans.fr/
-
 *** Test Cases ***
 create 8 activities and 1 path
     Open Web Application without closing

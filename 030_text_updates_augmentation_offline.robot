@@ -3,11 +3,6 @@ Library    SeleniumLibrary
 Library    OperatingSystem
 Resource       ./ressources.robot
 
-*** Variables ***
-
-${URL}    https://mixap-lium-preprod.univ-lemans.fr/
-
-
 *** Test Cases ***
 Create empty Augmented activity offline
     Open Web Application
@@ -20,8 +15,6 @@ Select Type
 
 Edit activity details
     Edit Activity Title    activité numéro 1
-    #Edit Activity Instructions    instruction relative à l'activité numéro 1
-    #Edit Activity Description    description de l'activité numéro 1
 
 Snap the background
     Next button
@@ -32,16 +25,13 @@ Snap the background
     Next button
     Sleep    2s
     Validation button
-    #Next button
 
 Add text to the augmented activity
     Wait Until Element Is Visible    xpath=//button[@title='Text']    15s
     Click Element    xpath=//button[@title='Text']
-
     Wait Until Element Is Visible    xpath=//textarea[@placeholder='Edit your text...']    15s
     Click Element    xpath=//textarea[@placeholder='Edit your text...']
     Input Text    xpath=//textarea[@placeholder='Edit your text...']    mon texte par défaut
-
     Sleep    2s
 
 Change text

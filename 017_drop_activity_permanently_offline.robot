@@ -3,33 +3,21 @@ Library    SeleniumLibrary
 Resource       ./ressources.robot
 
 *** Variables ***
-${URL}    https://mixap-lium-preprod.univ-lemans.fr/
+${card_id}    value
 
 *** Test Cases ***
 create an activity
     Open Web Application without closing
     Maximize Browser Window
     Go Offline
-    Create empty augementation    activité numéro 1
+    Create empty augmented activity    activité numéro 1
 
 drop activity
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'activity-card__menu-button')]    15s
-    Click Element    xpath=//button[contains(@class, 'activity-card__menu-button')]
-    Wait Until Element Is Visible    xpath=//span[contains(@class, 'ant-dropdown-menu-title-content') and text()='Delete']    15s
-    Click Element    xpath=//span[contains(@class, 'ant-dropdown-menu-title-content') and text()='Delete']
-    Wait Until Element Is Visible    xpath=//div[contains(@class, 'confirmation-dialog__footer')]//button[text()='Delete']    15s
-    Click Element    xpath=//div[contains(@class, 'confirmation-dialog__footer')]//button[text()='Delete']
+    ${card_id}=    Delete Activity Or Path    activité numéro 1
+    Set Suite Variable    ${card_id}
     Sleep    2s
 
 delete activity permanently
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'ds-header__download-button') and @title='Trash']    15s
-    Click Element    xpath=//button[contains(@class, 'ds-header__download-button') and @title='Trash']
+    Delete Activity Or Path Permanently    ${card_id}
     Sleep    2s
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'activity-card__action-button activity-card__action-button--delete activity-card__action-button--danger') and @title='Delete permanently']    15s
-    Click Element    xpath=//button[contains(@class, 'activity-card__action-button activity-card__action-button--delete activity-card__action-button--danger') and @title='Delete permanently']
-    Sleep    2s
-    Wait Until Element Is Visible    xpath=//div[contains(@class, 'confirmation-dialog__footer')]//button[text()='Delete']    15s
-    Click Element    xpath=//div[contains(@class, 'confirmation-dialog__footer')]//button[text()='Delete']
-    Sleep    2s
-
     Close Browser

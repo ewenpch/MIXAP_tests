@@ -3,11 +3,6 @@ Library    SeleniumLibrary
 Library    OperatingSystem
 Resource       ./ressources.robot
 
-*** Variables ***
-
-${URL}    https://mixap-lium-preprod.univ-lemans.fr/
-
-
 *** Test Cases ***
 Open application and change language
     Open Web Application
@@ -16,7 +11,7 @@ Open application and change language
 
 Test everything is in French
     Check that the page is in French
-    
+
 Test everything is in English
     Change Language    English
     Sleep    5s

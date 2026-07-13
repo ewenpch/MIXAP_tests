@@ -37,10 +37,6 @@ Open Web Application
     ${chrome_options}=    Set Chrome Options
     Close All Browsers
     Open Browser    ${URL}    chrome    options=${CHROME_OPTIONS}
-    #Wait Until Element Is Visible    id=details-button    timeout=10s
-    #Click Element    id=details-button
-    #Wait Until Element Is Visible    id=proceed-link    timeout=10s
-    #Click Element    id=proceed-link
     Title Should Be    MIXAP    timeout 10s
     Wait Until Element Is Visible    xpath=//button[text()='New activity']
 
@@ -48,12 +44,13 @@ Open Web Application without closing
     [Documentation]    ouvre le site avec le navigateur chrome en suivant les paramètres
     ${chrome_options}=    Set Chrome Options
     Open Browser    ${URL}    chrome    options=${CHROME_OPTIONS}
-    #Wait Until Element Is Visible    id=details-button    timeout=10s
-    #Click Element    id=details-button
-    #Wait Until Element Is Visible    id=proceed-link    timeout=10s
-    #Click Element    id=proceed-link
     Title Should Be    MIXAP    timeout 10s
     Wait Until Element Is Visible    xpath=//button[text()='New activity']
+
+Open Web Application Without Fake Media
+    [Documentation]    Open the site with plain Chrome (no fake camera/mic options). Used by tests that only need to confirm the app shell loads and don't drive the camera-dependent activity flows.
+    Open Browser    ${URL}    chrome
+    Maximize Browser Window
 
 Create Activity
     [Documentation]    clic sur le bouton création d'activité. Clicked via JavaScript to avoid "element click intercepted" failures from transient overlays (tooltips, badges) near the top of the page.
@@ -122,6 +119,149 @@ Wait for detection
     [Documentation]    wait for the augementation to be detected using the visibility of instructions
     Wait Until Element Is Not Visible     xpath=//span[contains(text(), 'Place the image in the frame')]    timeout=5s
 
+Wait For Detection Or Log Miss
+    [Documentation]    Wait for the augmentation to be detected, tolerating a miss: the target is expected to occasionally still be undetected after 25s, so a timeout here is logged as an expected WARN instead of failing the test.
+    ${status}    ${message}=    Run Keyword And Ignore Error    Wait for detection
+    Run Keyword If    '${status}' == 'FAIL'    Log    ⚠️ Expected behavior: The element is still visible after 25s miss detection.    WARN
+
+Add Text To Augmentation
+    [Documentation]    Add a text overlay to the currently open augmentation, using the provided text content.
+    [Arguments]    ${text}=mon texte par défaut
+    Wait Until Element Is Visible    xpath=//button[@title='Text']    15s
+    Click Element    xpath=//button[@title='Text']
+    Wait Until Element Is Visible    xpath=//textarea[@placeholder='Edit your text...']    15s
+    Click Element    xpath=//textarea[@placeholder='Edit your text...']
+    Input Text    xpath=//textarea[@placeholder='Edit your text...']    ${text}
+    Next button
+    Sleep    2s
+
+Add Image To Augmentation
+    [Documentation]    Add an image overlay to the currently open augmentation, using the provided image file.
+    [Arguments]    ${file_path}=${EXECDIR}/assets/annoter.png
+    Wait Until Element Is Visible    xpath=//button[@title='Image']    15s
+    Click Element    xpath=//button[@title='Image']
+    Wait Until Element Is Visible    xpath=//h5[contains(text(), 'Click to edit...')]    15s
+    Click Element    xpath=//h5[contains(text(), 'Click to edit...')]
+    Choose File    xpath=//input[@type='file']    ${file_path}
+    Next button
+
+Add Video To Augmentation
+    [Documentation]    Add a video overlay to the currently open augmentation, using the provided video file.
+    [Arguments]    ${file_path}=${EXECDIR}/assets/pexels.mp4
+    Wait Until Element Is Visible    xpath=//button[@title='Video']    15s
+    Click Element    xpath=//button[@title='Video']
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'ant-typography') and contains(., 'Click to edit...')]    15s
+    Click Element    xpath=//div[contains(@class, 'ant-typography') and contains(., 'Click to edit...')]
+    Choose File    xpath=//input[@type='file']    ${file_path}
+    Next button
+
+Add Sticker To Augmentation
+    [Documentation]    Add the "arrow" stock sticker to the currently open augmentation.
+    Wait Until Element Is Visible    xpath=//button[@title='Stickers']    15s
+    Click Element    xpath=//button[@title='Stickers']
+    Wait Until Element Is Visible    xpath=//img[contains(@src, 'image/arrow.png') and contains(@alt, 'Image 0')]    15s
+    Click Element    xpath=//img[contains(@src, 'image/arrow.png') and contains(@alt, 'Image 0')]
+    Next button
+
+Add Audio To Augmentation
+    [Documentation]    Add an audio overlay to the currently open augmentation, uploading a local sound file.
+    Wait Until Element Is Visible    xpath=//button[@title='Audio']    15s
+    Click Element    xpath=//button[@title='Audio']
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'css-aj0z9y')]    15s
+    Click Element    xpath=//div[contains(@class, 'css-aj0z9y')]
+    Choose File    xpath=//input[@type='file']    ${EXECDIR}/assets/1645.mp3
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'css-14q5elh')]    10s
+    Click Element    xpath=//div[contains(@class, 'css-14q5elh')]
+    Next button
+
+Add Sheet To Augmentation
+    [Documentation]    Add an empty note/sheet overlay to the currently open augmentation. Editing its text is not currently automatable (see comment below), so this only covers placing the empty note.
+    Wait Until Element Is Visible    xpath=//button[@title='Note']    15s
+    Click Element    xpath=//button[@title='Note']
+    Sleep    2
+    Next button
+    # TODO edit the sheet, unclickable, tried with ids but unable to find which part of the code enables its behavior
+
+Add 3D Object To Augmentation
+    [Documentation]    Add a 3D object overlay to the currently open augmentation, using the provided model file. Set ${click_next}=${False} to upload without advancing, e.g. when uploading several formats in a row and only the last one should proceed.
+    [Arguments]    ${file_path}    ${click_next}=${True}
+    Wait Until Element Is Visible    xpath=//button[@title='3D']    15s
+    Click Element    xpath=//button[@title='3D']
+    Wait Until Element Is Visible    xpath=//h5[contains(text(), 'Click to edit...')]    15s
+    Click Element    xpath=//h5[contains(text(), 'Click to edit...')]
+    Choose File    xpath=//input[@type='file']    ${file_path}
+    Sleep    2
+    IF    ${click_next}
+        Next button
+    END
+
+Add Link To Augmentation
+    [Documentation]    Add a link overlay to the currently open augmentation, pointing to the provided URL.
+    [Arguments]    ${url}=google.com/
+    Wait Until Element Is Visible    xpath=//button[@title='Link']    15s
+    Click Element    xpath=//button[@title='Link']
+    Sleep    2
+    Wait Until Element Is Visible    xpath=//h5[contains(text(), 'Click to edit...')]    15s
+    Click Element    xpath=//h5[contains(text(), 'Click to edit...')]
+    Wait Until Element Is Visible    xpath=//form[@id='basic']//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-text ant-btn-lg ant-btn-icon-only')]    15s
+    Click Element    xpath=//form[@id='basic']//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-text ant-btn-lg ant-btn-icon-only')]
+    Wait Until Element Is Visible    //input[@placeholder='Enter URL']    15s
+    Input Text    //input[@placeholder='Enter URL']    ${url}
+    Wait Until Element Is Visible    xpath=//button[.//span[@role='img' and @aria-label='check']]    15s
+    Click Element    xpath=//button[.//span[@role='img' and @aria-label='check']]
+    Sleep    1s
+    Next button
+
+Add AI Generated Text To Augmentation
+    [Documentation]    Open the AI generation tool and generate a text overlay from the provided prompt.
+    [Arguments]    ${prompt}=Generate a little poem about a cat and a dog playing together in the park.
+    Wait Until Element Is Visible    xpath=//button[@title='AI']    15s
+    Click Element    xpath=//button[@title='AI']
+    Wait Until Element Is Visible    xpath=//button[@aria-label='Text']    15s
+    Execute JavaScript    document.querySelector("button.ant-btn-icon-only[aria-label='Text']").click();
+    Wait Until Element Is Visible    xpath=//input[contains(@class, 'ant-input css-j9bb5n ant-input-outlined ds-modal__input') and @placeholder='Ask or describe what to generate…']    5s
+    Input Text    xpath=//input[contains(@class, 'ant-input css-j9bb5n ant-input-outlined ds-modal__input') and @placeholder='Ask or describe what to generate…']    ${prompt}
+    Wait Until Element Is Visible    xpath=//button[@aria-label='Generate preview']    15s
+    Click Element    xpath=//button[@aria-label='Generate preview']
+    Wait Until Element Is Visible    xpath=//button[.//span[@aria-label='plus']]    15s
+    Click Element    xpath=//button[.//span[@aria-label='plus']]
+    Next button
+    Sleep    2s
+
+Add AI Generated Image To Augmentation
+    [Documentation]    Open the AI generation tool and generate an image overlay from the provided prompt.
+    [Arguments]    ${prompt}=Generate an image of a cat and a dog playing together in the park.
+    Wait Until Element Is Visible    xpath=//button[@title='AI']    15s
+    Click Element    xpath=//button[@title='AI']
+    Wait Until Element Is Visible    xpath=//button[@aria-label='Image']    15s
+    Execute JavaScript    document.querySelector("button.ant-btn-icon-only[aria-label='Image']").click();
+    Wait Until Element Is Visible    xpath=//input[contains(@class, 'ant-input css-j9bb5n ant-input-outlined ds-modal__input') and @placeholder='Describe the image…']    5s
+    Input Text    xpath=//input[contains(@class, 'ant-input css-j9bb5n ant-input-outlined ds-modal__input') and @placeholder='Describe the image…']    ${prompt}
+    Wait Until Element Is Visible    xpath=//button[@aria-label='Generate preview']    15s
+    Click Element    xpath=//button[@aria-label='Generate preview']
+    Sleep    2s
+    Wait Until Element Is Visible    xpath=//button[.//span[@aria-label='plus']]    30s
+    Click Element    xpath=//button[.//span[@aria-label='plus']]
+    Next button
+    Sleep    2s
+
+Add AI Generated Audio To Augmentation
+    [Documentation]    Open the AI generation tool and generate a text-to-speech audio overlay from the provided text.
+    [Arguments]    ${text}=Hello world !
+    Wait Until Element Is Visible    xpath=//button[@title='AI']    15s
+    Click Element    xpath=//button[@title='AI']
+    Wait Until Element Is Visible    xpath=//button[@aria-label='Audio']    15s
+    Execute JavaScript    document.querySelector("button.ant-btn-icon-only[aria-label='Audio']").click();
+    Wait Until Element Is Visible    xpath=//input[contains(@class, 'ant-input css-j9bb5n ant-input-outlined ds-modal__input') and @placeholder='Type the text to speak…']    5s
+    Input Text    xpath=//input[contains(@class, 'ant-input css-j9bb5n ant-input-outlined ds-modal__input') and @placeholder='Type the text to speak…']    ${text}
+    Wait Until Element Is Visible    xpath=//button[@aria-label='Generate preview']    15s
+    Click Element    xpath=//button[@aria-label='Generate preview']
+    Sleep    2s
+    Wait Until Element Is Visible    xpath=//button[.//span[@aria-label='plus']]    30s
+    Click Element    xpath=//button[.//span[@aria-label='plus']]
+    Next button
+    Sleep    2s
+
 Click home button
     [Documentation]    Click on the home button using the house icon
     Wait Until Page Contains Element    xpath=//button[contains(@class, 'editor__close-button')]    timeout=5s
@@ -154,35 +294,25 @@ Delete Tag from Activity
 
 Edit Activity Title
     [Arguments]    ${title}
-    #Click Element    xpath=//span[@id='title_editor']/div[@role='button']
     Wait Until Element Is Visible    xpath=//input[contains(@class, 'activity-view__input--title')]    5s
     Input Text    xpath=//input[contains(@class, 'activity-view__input--title')]    ${title}
-    #Press Keys    xpath=//textarea[not(contains(@style, 'visibility:hidden'))]    RETURN
     Sleep    2    # Manually wait for the text to be updated
 
 Edit Path Title
+    [Documentation]    Paths and activities share the same title editor, so this just delegates to "Edit Activity Title".
     [Arguments]    ${title}
-    #Click Element    xpath=//span[@id='title_editor']/div[@role='button']
-    Wait Until Element Is Visible    xpath=//input[contains(@class, 'activity-view__input--title')]    5s
-    Input Text    xpath=//input[contains(@class, 'activity-view__input--title')]    ${title}
-    #Press Keys    xpath=//textarea[not(contains(@style, 'visibility:hidden'))]    RETURN
-    Sleep    2    # Manually wait for the text to be updated
+    Edit Activity Title    ${title}
 
 Edit Activity Instructions
     [Arguments]    ${instructions}
-    #Click Element    xpath=//span[@id='instruction_editor']/div[@role='button']
     Wait Until Element Is Visible    xpath=//textarea[contains(@class, 'activity-view__input--instruction')]    5s
     Input Text    xpath=//textarea[contains(@class, 'activity-view__input--instruction')]    ${instructions}
-    #Press Keys    xpath=//textarea[not(contains(@style, 'visibility:hidden'))]    RETURN
     Sleep    2    # Manually wait for the text to be updated
 
 Edit Path Instructions
+    [Documentation]    Paths and activities share the same instructions editor, so this just delegates to "Edit Activity Instructions".
     [Arguments]    ${instructions}
-    #Click Element    xpath=//span[@id='instruction_editor']/div[@role='button']
-    Wait Until Element Is Visible    xpath=//textarea[contains(@class, 'activity-view__input--instruction')]    5s
-    Input Text    xpath=//textarea[contains(@class, 'activity-view__input--instruction')]    ${instructions}
-    #Press Keys    xpath=//textarea[not(contains(@style, 'visibility:hidden'))]    RETURN
-    Sleep    2    # Manually wait for the text to be updated
+    Edit Activity Instructions    ${instructions}
 
 Edit Activity Description
     [Documentation]    Edit the activity description using the provided description text
@@ -200,9 +330,8 @@ Create empty augmented activity
     Select Activity Type    Augmented activity
     Next button
     Sleep    2s
-    Wait Until Element Is Visible    xpath=//input[contains(@class, 'activity-view__input--title')]    5s
-    Input Text    xpath=//input[contains(@class, 'activity-view__input--title')]    ${title}
-    Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary editor__nav-button editor__nav-button--primary')]
+    Edit Activity Title    ${title}
+    Next button
     Sleep    2s
     Snap the background
     Sleep    5s
@@ -214,8 +343,7 @@ Create empty augmented activity
     Sleep    2s
     Next button
     Sleep    2s
-    ${status}    ${message}=    Run Keyword And Ignore Error    Wait for detection
-    Run Keyword If    '${status}' == 'FAIL'    Log    ⚠️ Expected behavior: The element is still visible after 25s miss detection.    WARN
+    Wait For Detection Or Log Miss
     Click home button
 
 Create empty validation
@@ -225,11 +353,9 @@ Create empty validation
     Select Activity Type    Search and Find
     Next button
     Sleep    2s
-    Wait Until Element Is Visible    xpath=//input[contains(@class, 'activity-view__input--title')]    5s
-    Input Text    xpath=//input[contains(@class, 'activity-view__input--title')]    ${title}
-    Wait Until Element Is Visible    xpath=//textarea[contains(@class, 'activity-view__input--instruction')]    5s
-    Input Text    xpath=//textarea[contains(@class, 'activity-view__input--instruction')]    ${instructions}
-    Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary editor__nav-button editor__nav-button--primary')]
+    Edit Activity Title    ${title}
+    Edit Activity Instructions    ${instructions}
+    Next button
     Sleep    2s
     Snap the background
     Sleep    2s
@@ -241,15 +367,14 @@ Create empty validation
     Sleep    2s
     Next button
     Sleep    5s
-    ${status}    ${message}=    Run Keyword And Ignore Error    Wait for detection
-    Run Keyword If    '${status}' == 'FAIL'    Log    ⚠️ Expected behavior: The element is still visible after 25s miss detection.    WARN
+    Wait For Detection Or Log Miss
     Click home button
 
 Create empty path
-    [Documentation]    Create an empty path with a title and instructions
-    [Arguments]    ${title}=parcours numéro 1    ${instructions}=instruction relative au parcours numéro 1
+    [Documentation]    Create an empty path with a title and instructions. Defaults to "Free Exploration Path"; pass ${path_type} to create one of the other path types instead (e.g. "Auto-Triggered path", "Guided Path").
+    [Arguments]    ${title}=parcours numéro 1    ${instructions}=instruction relative au parcours numéro 1    ${path_type}=Free Exploration Path
     Create Path
-    Select Path Type    Free Exploration Path
+    Select Path Type    ${path_type}
     Edit Path Title    ${title}
     Edit Path Instructions    ${instructions}
     Next button
@@ -358,6 +483,20 @@ Sign In
     Click Element    xpath=//button[text()='Continue']
     Sleep    5s
 
+Sign Up
+    [Documentation]    Sign up for a new account using the provided username, email and password
+    [Arguments]    ${username}    ${email}    ${password}
+    Wait Until Element Is Visible    xpath=//button[.//span[contains(@class, 'anticon anticon-user')]]    15s
+    Click Element    xpath=//button[.//span[contains(@class, 'anticon anticon-user')]]
+    Wait Until Element Is Visible    xpath=//button[text()='Sign up']    15s
+    Click Element    xpath=//button[text()='Sign up']
+    Wait Until Element Is Visible    xpath=//input[@placeholder='your_username']    15s
+    Input Text    xpath=//input[@placeholder='your_username']    ${username}
+    Input Text    xpath=//input[@placeholder='you@company.com']    ${email}
+    Input Text    xpath=//input[@placeholder='••••••••']    ${password}
+    Click Element    xpath=//button[text()='Create account']
+    Sleep    5s
+
 Open Import Modal
     [Documentation]    Click the import button and verify the import modal actually opened. The click is occasionally swallowed by the app, so this is retried by its caller.
     Click Element    xpath=//button[contains(@class, 'home__import-btn')]
@@ -407,15 +546,27 @@ Delete Activity Or Path
     RETURN    ${card_id}
 
 Restore Activity Or Path
-    [Documentation]    Open the Trash and restore the card identified by its "data-id" (as returned by "Delete Activity Or Path"). Scoping the restore button by data-id keeps this correct even if the trash holds several look-alike deleted cards.
+    [Documentation]    Open the Trash and restore the card identified by its "data-id" (as returned by "Delete Activity Or Path"). Scoping the restore button by data-id keeps this correct even if the trash holds several look-alike deleted cards. Matched directly under the card (not inside a "top-actions" wrapper) since that wrapper only exists for path cards, not activity cards.
     [Arguments]    ${card_id}
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'ds-header__download-button') and @title='Trash']    15s
     Click Element    xpath=//button[contains(@class, 'ds-header__download-button') and @title='Trash']
     ${card}=    Set Variable    xpath=//div[contains(@class, 'activity-card') and @data-id='${card_id}']
-    ${restore_button}=    Set Variable    ${card}//div[contains(@class, 'activity-card__top-actions')]//button[contains(@class, 'activity-card__action-button--restore')]
+    ${restore_button}=    Set Variable    ${card}//button[contains(@class, 'activity-card__action-button--restore')]
     Wait Until Element Is Visible    ${restore_button}    15s
     Scroll Element Into View    ${restore_button}
     Click Element    ${restore_button}
+
+Delete Activity Or Path Permanently
+    [Documentation]    Open the Trash and permanently delete the card identified by its "data-id" (as returned by "Delete Activity Or Path"). Scoping the button by data-id keeps this correct even if the trash holds several look-alike deleted cards.
+    [Arguments]    ${card_id}
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'ds-header__download-button') and @title='Trash']    15s
+    Click Element    xpath=//button[contains(@class, 'ds-header__download-button') and @title='Trash']
+    ${card}=    Set Variable    xpath=//div[contains(@class, 'activity-card') and @data-id='${card_id}']
+    ${delete_button}=    Set Variable    ${card}//button[contains(@class, 'activity-card__action-button--delete') and @title='Delete permanently']
+    Wait Until Element Is Visible    ${delete_button}    15s
+    Click Element    ${delete_button}
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'confirmation-dialog__footer')]//button[text()='Delete']    15s
+    Click Element    xpath=//div[contains(@class, 'confirmation-dialog__footer')]//button[text()='Delete']
 
 Create basic search and find activity
     [Documentation]    Create a basic search and find activity with a title, instructions, snap the background and validate
