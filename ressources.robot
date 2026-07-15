@@ -524,7 +524,7 @@ Generate Share Code
     RETURN    ${code}
 
 Import Activity
-    [Documentation]    Import an activity using the provided code
+    [Documentation]    Import an activity using the provided code. Read-only imported activities are tied to the browser session/machine, not the signed-in account (confirmed behavior, not a bug) - closing the browser deletes them. Never call "Close Browser" between importing and using an imported activity in the same test, or it will no longer be found afterwards.
     [Arguments]    ${code}
     Wait Until Element Is Not Visible    xpath=//*[contains(text(), 'Importing')]    30s
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__import-btn')]    15s
