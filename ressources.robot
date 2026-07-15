@@ -872,3 +872,21 @@ Play Activity
     ${play_button}=    Set Variable    xpath=//h3[contains(@class, 'activity-card') and text()='${activity_title}']/ancestor::div[3]//button[contains(@class, 'activity-card__title-arrow-button')]
     Wait Until Element Is Visible    ${play_button}    15s
     Click Element    ${play_button}
+
+Resync Activity
+    [Documentation]    Click an activity/path card's sync button after it has already been synced once, confirm the resync in the cloud sync status modal, and wait for the upload to complete again.
+    [Arguments]    ${activity_title}=${EMPTY}
+    IF    '${activity_title}' != '${EMPTY}'
+        Wait For Activity    ${activity_title}
+        ${sync_button}=    Set Variable    xpath=//h3[contains(@class, 'activity-card') and text()='${activity_title}']/ancestor::div[3]//button[contains(@class, 'activity-card__action-button--sync')]
+        ${uploaded_button}=    Set Variable    xpath=//h3[contains(@class, 'activity-card') and text()='${activity_title}']/ancestor::div[3]//button[contains(@class, 'activity-card__action-button--sync uploaded')]
+    ELSE
+        ${sync_button}=    Set Variable    xpath=//button[contains(@class, 'activity-card__action-button activity-card__action-button--sync')]
+        ${uploaded_button}=    Set Variable    xpath=//button[contains(@class, 'activity-card__action-button activity-card__action-button--sync uploaded')]
+    END
+    Wait Until Element Is Visible    ${sync_button}    15s
+    Click Element    ${sync_button}
+    Sleep    5s
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'cloud-sync-status-modal__button cloud-sync-status-modal__button--primary')]    15s
+    Click Element    xpath=//button[contains(@class, 'cloud-sync-status-modal__button cloud-sync-status-modal__button--primary')]
+    Wait Until Element Is Visible    ${uploaded_button}    15s

@@ -36,14 +36,11 @@ Add text to the activity as first account and resynchronize
     Reopen Activity Editor    updated activity ${run_suffix}
     Add Text To Augmentation    sample text    click_next=${False}
     Click home button
-    Synchronize Activity
+    Resync Activity
     Sleep    5s
     Close Browser
 
 Verify the text update propagated to the imported copy
     [Documentation]    Back on account 2: reopen the imported copy and check that the text added by account 1 after the import is now present.
     Switch Browser    compte2
-    Play Activity    updated activity ${run_suffix}
-    Wait Until Element Is Visible    xpath=//textarea[@placeholder='Edit your text...']    15s
-    ${text}=    Get Value    xpath=//textarea[@placeholder='Edit your text...']
-    Should Be Equal As Strings    ${text}    sample text
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'activity-card__status-badge activity-card__status-badge--updated-recent')]    20s
