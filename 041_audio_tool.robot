@@ -39,8 +39,7 @@ Select the audio tool and use Microphone
     Click Element    xpath=//button[.//*[@data-testid='PauseIcon']]
     Click Element    xpath=//button[.//*[@data-testid='CheckIcon']]
     Sleep    2s
-    Click Element    xpath=//button[.//*[@data-testid='PlayArrowIcon']]
-    Sleep    5s
+    Play Audio And Verify Playback
     Close Browser
 
 Open application and create an empty activity - for upload test
