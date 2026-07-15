@@ -515,6 +515,10 @@ Synchronize Activity
 Generate Share Code
     [Documentation]    Synchronize the currently visible activity/path, open its sharing panel and return the read-only share code. Verified live: the "Read-only" tab is active by default and already displays a "<code>" element with the share code - no "generate"/confirm click needed (that button belongs to the inactive "Template" tab, which is why waiting on it used to time out).
     Synchronize Activity
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]    15s
+    Click Element    xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'ant-btn-dangerous')]    15s
+    Click Element    xpath=//button[contains(@class, 'ant-btn-dangerous')]
     Wait Until Element Is Visible    xpath=//code    30s
     ${code}=    Get Text    xpath=//code
     RETURN    ${code}
