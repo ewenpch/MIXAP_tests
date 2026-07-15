@@ -40,6 +40,14 @@ Open Web Application
     Title Should Be    MIXAP    timeout 10s
     Wait Until Element Is Visible    xpath=//button[text()='New activity']
 
+Open Web Application with alias
+    [Documentation]    ouvre le site avec le navigateur chrome en suivant les paramètres et avec un alias en paramètres
+    [Arguments]    ${alias}
+    ${chrome_options}=    Set Chrome Options
+    Open Browser    ${URL}    chrome    options=${CHROME_OPTIONS}    alias=${alias}
+    Title Should Be    MIXAP    timeout 10s
+    Wait Until Element Is Visible    xpath=//button[text()='New activity']
+
 Open Web Application without closing
     [Documentation]    ouvre le site avec le navigateur chrome en suivant les paramètres
     ${chrome_options}=    Set Chrome Options
@@ -118,6 +126,13 @@ Validation button
 Wait for detection
     [Documentation]    wait for the augementation to be detected using the visibility of instructions
     Wait Until Element Is Not Visible     xpath=//span[contains(text(), 'Place the image in the frame')]    timeout=5s
+
+Play Audio And Verify Playback
+    [Documentation]    Click the audio tool's Play button and verify the audio is actually being played back. There is no HTML <audio>/<video> element to inspect (the app uses the Web Audio API), so playback is instead confirmed through the button's own state: its icon switches from "PlayArrowIcon" to "PauseIcon" while playing, and switches back to "PlayArrowIcon" on its own once the clip finishes - proving playback both started and ran to completion, not just that the click was accepted.
+    [Arguments]    ${max_duration}=15s
+    Click Element    xpath=//button[.//*[@data-testid='PlayArrowIcon']]
+    Wait Until Element Is Visible    xpath=//button[.//*[@data-testid='PauseIcon']]    5s
+    Wait Until Element Is Visible    xpath=//button[.//*[@data-testid='PlayArrowIcon']]    ${max_duration}
 
 Wait For Detection Or Log Miss
     [Documentation]    Wait for the augmentation to be detected, tolerating a miss: the target is expected to occasionally still be undetected after 25s, so a timeout here is logged as an expected WARN instead of failing the test.
@@ -394,6 +409,11 @@ Go Offline
     Call Method    ${webdriver}    execute_cdp_cmd    Network.emulateNetworkConditions    ${conditions}
     Wait Until Element Is Visible    xpath=//button[.//span[contains(@class, 'anticon-disconnect')]]    15s
 
+Wait For Activity
+    [Documentation]    Wait until the activity/path card identified by the provided title is visible on the home menu.
+    [Arguments]    ${activity_title}    ${timeout}=15s
+    Wait Until Element Is Visible    xpath=//div[h3[contains(@class, 'activity-card') and text()='${activity_title}']]    ${timeout}
+
 Click Activity Card
     [Documentation]    Scroll to and click an activity card identified by its title. Retried by its caller since the layout can shift between the scroll and the click on large accounts.
     [Arguments]    ${activity_title}
@@ -506,15 +526,25 @@ Open Import Modal
     Wait Until Element Is Visible    xpath=//input[@placeholder='Select a share code']    5s
 
 Synchronize Activity
-    [Documentation]    Click the currently visible activity/path card's sync button and wait for the upload to complete (the button gains the "uploaded" class once done). Assumes a single relevant sync button is visible on the page - scope the caller's context (e.g. just after creating/editing one activity) accordingly.
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'activity-card__action-button activity-card__action-button--sync')]    15s
-    Click Element    xpath=//button[contains(@class, 'activity-card__action-button activity-card__action-button--sync')]
+    [Documentation]    Click an activity/path card's sync button and wait for the upload to complete (the button gains the "uploaded" class once done). When ${activity_title} is given, first checks that card is visible on the home menu and scopes the sync button to it specifically - use this whenever more than one card could be on screen. Without it, falls back to assuming a single relevant sync button is visible (legacy behavior for existing callers).
+    [Arguments]    ${activity_title}=${EMPTY}
+    IF    '${activity_title}' != '${EMPTY}'
+        Wait For Activity    ${activity_title}
+        ${sync_button}=    Set Variable    xpath=//h3[contains(@class, 'activity-card') and text()='${activity_title}']/ancestor::div[3]//button[contains(@class, 'activity-card__action-button--sync')]
+        ${uploaded_button}=    Set Variable    xpath=//h3[contains(@class, 'activity-card') and text()='${activity_title}']/ancestor::div[3]//button[contains(@class, 'activity-card__action-button--sync uploaded')]
+    ELSE
+        ${sync_button}=    Set Variable    xpath=//button[contains(@class, 'activity-card__action-button activity-card__action-button--sync')]
+        ${uploaded_button}=    Set Variable    xpath=//button[contains(@class, 'activity-card__action-button activity-card__action-button--sync uploaded')]
+    END
+    Wait Until Element Is Visible    ${sync_button}    15s
+    Click Element    ${sync_button}
     Sleep    5s
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'activity-card__action-button activity-card__action-button--sync uploaded')]    15s
+    Wait Until Element Is Visible    ${uploaded_button}    15s
 
 Generate Share Code
-    [Documentation]    Synchronize the currently visible activity/path, open its sharing panel and return the read-only share code. Verified live: the "Read-only" tab is active by default and already displays a "<code>" element with the share code - no "generate"/confirm click needed (that button belongs to the inactive "Template" tab, which is why waiting on it used to time out).
-    Synchronize Activity
+    [Documentation]    Synchronize an activity/path, open its sharing panel and return the read-only share code. Pass ${activity_title} to check the card exists and scope the sync to it specifically when more than one card could be on screen. Verified live: the "Read-only" tab is active by default and already displays a "<code>" element with the share code - no "generate"/confirm click needed (that button belongs to the inactive "Template" tab, which is why waiting on it used to time out).
+    [Arguments]    ${activity_title}=${EMPTY}
+    Synchronize Activity    ${activity_title}
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]    15s
     Click Element    xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'ant-btn-dangerous')]    15s
@@ -524,7 +554,7 @@ Generate Share Code
     RETURN    ${code}
 
 Import Activity
-    [Documentation]    Import an activity using the provided code
+    [Documentation]    Import an activity using the provided code. Read-only imported activities are tied to the browser session/machine, not the signed-in account (confirmed behavior, not a bug) - closing the browser deletes them. Never call "Close Browser" between importing and using an imported activity in the same test, or it will no longer be found afterwards.
     [Arguments]    ${code}
     Wait Until Element Is Not Visible    xpath=//*[contains(text(), 'Importing')]    30s
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__import-btn')]    15s
@@ -575,9 +605,6 @@ Reopen Activity Editor
     [Documentation]    Reopen an existing activity identified by its title (via its card menu's "Edit" action) and step through the metadata pages to reach the augmentation canvas, ready to add more content with keywords like "Add Text To Augmentation". Verified live: unlike the single combined page used during initial creation, the reopened editor paginates title/instructions/description across separate "Next" clicks before reaching the "#three-canvas" board - if the app changes that step count this is the first place to check.
     [Arguments]    ${activity_title}
     Wait Until Keyword Succeeds    8x    15s    Find And Open Activity Menu And Edit    ${activity_title}
-    Wait Until Element Is Visible    xpath=//*[contains(@class, 'editor__header-title')]    15s
-    Sleep    2s
-    Next button
     Sleep    2s
     Next button
     Sleep    2s
@@ -837,3 +864,29 @@ Check that the page is in Turkish
     Sleep    2s
     Wait Until Element Is Visible    xpath=//button[text()="Yeni öğrenme yolu"]   2s
     Wait Until Element Is Visible    xpath=//div[contains(@class, 'activity-card__status-badges')]//span[text()='Yerel taslak']    2s
+
+Play Activity
+    [Documentation]    Opens the activity by title, launching its AR player view via its title-arrow-button. Scoped to that specific card so it does not launch the wrong activity when several look-alike cards are visible on screen.
+    [Arguments]    ${activity_title}
+    Wait For Activity    ${activity_title}
+    ${play_button}=    Set Variable    xpath=//h3[contains(@class, 'activity-card') and text()='${activity_title}']/ancestor::div[3]//button[contains(@class, 'activity-card__title-arrow-button')]
+    Wait Until Element Is Visible    ${play_button}    15s
+    Click Element    ${play_button}
+
+Resync Activity
+    [Documentation]    Click an activity/path card's sync button after it has already been synced once, confirm the resync in the cloud sync status modal, and wait for the upload to complete again.
+    [Arguments]    ${activity_title}=${EMPTY}
+    IF    '${activity_title}' != '${EMPTY}'
+        Wait For Activity    ${activity_title}
+        ${sync_button}=    Set Variable    xpath=//h3[contains(@class, 'activity-card') and text()='${activity_title}']/ancestor::div[3]//button[contains(@class, 'activity-card__action-button--sync')]
+        ${uploaded_button}=    Set Variable    xpath=//h3[contains(@class, 'activity-card') and text()='${activity_title}']/ancestor::div[3]//button[contains(@class, 'activity-card__action-button--sync uploaded')]
+    ELSE
+        ${sync_button}=    Set Variable    xpath=//button[contains(@class, 'activity-card__action-button activity-card__action-button--sync')]
+        ${uploaded_button}=    Set Variable    xpath=//button[contains(@class, 'activity-card__action-button activity-card__action-button--sync uploaded')]
+    END
+    Wait Until Element Is Visible    ${sync_button}    15s
+    Click Element    ${sync_button}
+    Sleep    5s
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'cloud-sync-status-modal__button cloud-sync-status-modal__button--primary')]    15s
+    Click Element    xpath=//button[contains(@class, 'cloud-sync-status-modal__button cloud-sync-status-modal__button--primary')]
+    Wait Until Element Is Visible    ${uploaded_button}    15s

@@ -23,6 +23,10 @@ Import activity with share code
     Import Activity    ${sharecode}
     Sleep    2s
 
+# No "Close Browser" between this test case and the previous one: read-only imported
+# activities are tied to the browser session/machine, not the signed-in account (confirmed
+# app behavior). Closing the browser here would delete the imported activity before it can
+# be launched below.
 Launch imported activity
     Click Element    xpath=//button[contains(@class, 'activity-card__title-arrow-button')]
     Sleep    2s
