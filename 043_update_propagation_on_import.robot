@@ -17,7 +17,7 @@ Create activity and share as first account
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__new-activity-btn')]    15s
     ${run_suffix}=    Generate Random String    8    [LETTERS][NUMBERS]
     Set Suite Variable    ${run_suffix}
-    Create empty augmented activity    activité mise à jour ${run_suffix}
+    Create empty augmented activity    updated activity ${run_suffix}
     ${sharecode}=    Generate Share Code
     Set Suite Variable    ${sharecode}
     Sleep    5s
@@ -36,8 +36,8 @@ Add text to the activity as first account and resynchronize
     Open Web Application
     Sign In    testaccount2@mail.com    password123
     Sleep    15s
-    Reopen Activity Editor    activité mise à jour ${run_suffix}
-    Add Text To Augmentation    texte ajouté après partage    click_next=${False}
+    Reopen Activity Editor    updated activity ${run_suffix}
+    Add Text To Augmentation    sample text    click_next=${False}
     Click home button
     Synchronize Activity
     Sleep    5s
@@ -48,8 +48,8 @@ Verify the text update propagated to the imported copy
     Open Web Application
     Sign In    test3@example.com    password123
     Sleep    15s
-    Reopen Activity Editor    activité mise à jour ${run_suffix}
+    Reopen Activity Editor    updated activity ${run_suffix}
     Wait Until Element Is Visible    xpath=//textarea[@placeholder='Edit your text...']    15s
     ${text}=    Get Value    xpath=//textarea[@placeholder='Edit your text...']
-    Should Be Equal As Strings    ${text}    texte ajouté après partage
+    Should Be Equal As Strings    ${text}    sample text
     Close Browser
