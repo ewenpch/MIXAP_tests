@@ -19,3 +19,18 @@ delete activity permanently
     Delete Activity Or Path Permanently    ${card_id}
     Sleep    2s
     Close Browser
+
+create an activity - Slow 3G
+    Open Web Application without closing
+    Set Network Speed
+    Create empty augmented activity    activité numéro 1 Slow3G
+
+drop activity - Slow 3G
+    ${card_id}=    Delete Activity Or Path    activité numéro 1 Slow3G
+    Set Suite Variable    ${card_id}
+    Sleep    2s
+
+delete activity permanently - Slow 3G
+    Delete Activity Or Path Permanently    ${card_id}
+    Sleep    2s
+    Close Browser

@@ -8,3 +8,9 @@ Create empty path
     Open Web Application
     Create empty path    path_type=Auto-Triggered path
     Close Browser
+
+Create empty path - Slow 3G
+    Open Web Application
+    Set Network Speed
+    Create empty path    path_type=Auto-Triggered path
+    Close Browser
