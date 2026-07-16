@@ -553,6 +553,20 @@ Generate Share Code
     ${code}=    Get Text    xpath=//code
     RETURN    ${code}
 
+Generate Template Share Code
+    [Documentation]    Synchronize an activity/path, open its sharing panel, switch to the "Template" tab and return the generated template share code. Unlike the read-only code (shown immediately), the Template tab requires clicking "Generate Template Code" and then confirming an irreversible-action warning dialog before a code appears - verified live, no "<code>" element exists there until both are clicked. Pass ${activity_title} to scope the sync to a specific card when more than one could be on screen.
+    [Arguments]    ${activity_title}=${EMPTY}
+    Synchronize Activity    ${activity_title}
+    Wait Until Element Is Visible    xpath=//div[contains(@class,'ant-tabs-tab') and .//text()='Template']    15s
+    Click Element    xpath=//div[contains(@class,'ant-tabs-tab') and .//text()='Template']
+    Wait Until Element Is Visible    xpath=//button[contains(., 'Generate Template Code')]    15s
+    Click Element    xpath=//button[contains(., 'Generate Template Code')]
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'ant-btn-dangerous')]    15s
+    Click Element    xpath=//button[contains(@class, 'ant-btn-dangerous')]
+    Wait Until Element Is Visible    xpath=//code    30s
+    ${code}=    Get Text    xpath=//code
+    RETURN    ${code}
+
 Import Activity
     [Documentation]    Import an activity using the provided code. Read-only imported activities are tied to the browser session/machine, not the signed-in account (confirmed behavior, not a bug) - closing the browser deletes them. Never call "Close Browser" between importing and using an imported activity in the same test, or it will no longer be found afterwards.
     [Arguments]    ${code}
@@ -887,6 +901,12 @@ Resync Activity
     Wait Until Element Is Visible    ${sync_button}    15s
     Click Element    ${sync_button}
     Sleep    5s
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'cloud-sync-status-modal__button cloud-sync-status-modal__button--primary')]    15s
-    Click Element    xpath=//button[contains(@class, 'cloud-sync-status-modal__button cloud-sync-status-modal__button--primary')]
+    # Some activities resync immediately (the modal opens already showing "Synced" with no
+    # confirmation needed), others show a confirm button in the cloud sync status modal first
+    # (observed live in both states). Click it only if it actually appears, instead of assuming
+    # either behavior.
+    ${confirm_visible}=    Run Keyword And Return Status    Wait Until Element Is Visible    xpath=//button[contains(@class, 'cloud-sync-status-modal__button cloud-sync-status-modal__button--primary')]    5s
+    IF    ${confirm_visible}
+        Click Element    xpath=//button[contains(@class, 'cloud-sync-status-modal__button cloud-sync-status-modal__button--primary')]
+    END
     Wait Until Element Is Visible    ${uploaded_button}    15s
