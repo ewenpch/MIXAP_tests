@@ -414,6 +414,28 @@ Wait For Activity
     [Arguments]    ${activity_title}    ${timeout}=15s
     Wait Until Element Is Visible    xpath=//div[h3[contains(@class, 'activity-card') and text()='${activity_title}']]    ${timeout}
 
+Search For
+    [Documentation]    Open the home menu's search box (if not already open) and replace its content with the given text, filtering the visible activity/path cards. Pass ${EMPTY} to clear the search. Verified live: "CTRL+a" does not actually select the existing text here (Input Text just appends after it), so the field is cleared with "Clear Element Text" instead - which can itself collapse the search box back to its closed icon state, so visibility is re-checked and the box re-opened before typing new text into it.
+    [Arguments]    ${search_text}
+    ${search_input}=    Set Variable    xpath=//input[@placeholder='Search activities...']
+    ${input_visible}=    Run Keyword And Return Status    Wait Until Element Is Visible    ${search_input}    2s
+    IF    not ${input_visible}
+        Click Element    xpath=//button[contains(@class, 'home__search-btn')]
+        Wait Until Element Is Visible    ${search_input}    5s
+    END
+    Click Element    xpath=//span[contains(@class, 'ant-input-suffix')]
+    Click Element    xpath=//button[contains(@class, 'home__search-btn')]
+    Sleep    1s
+    IF    '${search_text}' != '${EMPTY}'
+        ${still_visible}=    Run Keyword And Return Status    Wait Until Element Is Visible    ${search_input}    2s
+        IF    not ${still_visible}
+            Click Element    xpath=//button[contains(@class, 'home__search-btn')]
+            Wait Until Element Is Visible    ${search_input}    5s
+        END
+        Input Text    ${search_input}    ${search_text}
+    END
+    Sleep    2s
+
 Click Activity Card
     [Documentation]    Scroll to and click an activity card identified by its title. Retried by its caller since the layout can shift between the scroll and the click on large accounts.
     [Arguments]    ${activity_title}
