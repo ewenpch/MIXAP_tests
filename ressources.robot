@@ -5,6 +5,7 @@ Library    Collections
 *** Variables ***
 ${URL}    https://mixap-lium-preprod.univ-lemans.fr/
 ${RELATIVE_VIDEO_PATH}    ./assets/fakecamfeed_cortez.mjpeg
+${ANIMATED_PATH}    ./assets/animated.gif
 
 
 *** Keywords ***
@@ -91,8 +92,7 @@ Use template image
     [Documentation]    use a template image instead of taking a photo
     Sleep    2s
     Wait Until Element Is Visible    xpath=//span[text()='upload image']
-    Click Element    xpath=//span[text()='upload image']
-    Choose File    xpath=//input[@type='file']    ${EXECDIR}/assets/cat.webp
+    Choose File    xpath=//input[@type='file']    ${EXECDIR}/assets/animated.gif
     
 Select Activity Type
     [Documentation]    Select the activity type using a parameter
@@ -289,13 +289,12 @@ Click home button
 Add Tag to Activity
     [Documentation]    Add a tag to the activity using the provided tag name
     [Arguments]    ${tag_name}
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__labels-btn')]    5s
-    Click Element    xpath=//button[contains(@class, 'home__labels-btn')]
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'labels-panel__action-btn')]    5s
-    Click Element    xpath=//button[contains(@class, 'labels-panel__action-btn')]
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'editor__tags-chip')]    5s
+    Click Element    xpath=//button[contains(@class, 'editor__tags-chip')]
+    Wait Until Element Is Visible    xpath=//button[contains(@aria-label, 'Add label')]
+    Click Element    xpath=//button[contains(@aria-label, 'Add label')]
     Input Text    xpath=//input[contains(@class, 'labels-panel__add-name-input')]    ${tag_name}
-    Press Keys    xpath=//input[contains(@class, 'ant-select-selection-search-input')]    RETURN
-    Click Element    xpath=//button[contains(@class, 'labels-panel__add-submit')]
+    Press Keys    xpath=//input[contains(@class, 'labels-panel__add-name-input')]    RETURN
     Click Element    xpath=//button[contains(@class, 'labels-panel__close')]
 
 Delete Tag from Activity
@@ -408,6 +407,24 @@ Go Offline
     ${conditions}    Create Dictionary    offline=${True}    latency=${novalue}    downloadThroughput=${novalue}    uploadThroughput=${novalue}
     Call Method    ${webdriver}    execute_cdp_cmd    Network.emulateNetworkConditions    ${conditions}
     Wait Until Element Is Visible    xpath=//button[.//span[contains(@class, 'anticon-disconnect')]]    15s
+
+Set Network Speed
+    [Documentation]    Throttle the network using Chrome DevTools Protocol (CDP), for testing behavior under a slow connection instead of going fully offline. Defaults roughly match Chrome DevTools' "Slow 3G" preset (2000ms latency, ~62.5 KB/s down/up). Call "Reset Network Speed" afterwards to remove the throttling.
+    [Arguments]    ${latency}=2000    ${download_throughput}=62500    ${upload_throughput}=62500
+    ${latency}=    Convert To Integer    ${latency}
+    ${download_throughput}=    Convert To Integer    ${download_throughput}
+    ${upload_throughput}=    Convert To Integer    ${upload_throughput}
+    ${seleniumlib}=    Get Library Instance    SeleniumLibrary
+    VAR    ${webdriver}    ${seleniumlib.driver}
+    ${conditions}=    Create Dictionary    offline=${False}    latency=${latency}    downloadThroughput=${download_throughput}    uploadThroughput=${upload_throughput}
+    Call Method    ${webdriver}    execute_cdp_cmd    Network.emulateNetworkConditions    ${conditions}
+
+Reset Network Speed
+    [Documentation]    Remove any network throttling applied via "Set Network Speed" or "Go Offline", restoring a normal, unthrottled connection. A throughput of -1 tells CDP not to limit that direction at all.
+    ${seleniumlib}=    Get Library Instance    SeleniumLibrary
+    VAR    ${webdriver}    ${seleniumlib.driver}
+    ${conditions}=    Create Dictionary    offline=${False}    latency=${0}    downloadThroughput=${-1}    uploadThroughput=${-1}
+    Call Method    ${webdriver}    execute_cdp_cmd    Network.emulateNetworkConditions    ${conditions}
 
 Wait For Activity
     [Documentation]    Wait until the activity/path card identified by the provided title is visible on the home menu.
@@ -932,3 +949,19 @@ Resync Activity
         Click Element    xpath=//button[contains(@class, 'cloud-sync-status-modal__button cloud-sync-status-modal__button--primary')]
     END
     Wait Until Element Is Visible    ${uploaded_button}    15s
+
+Filter by tag
+    [Documentation]    Add a tag to the activity using the provided tag name
+    [Arguments]    ${tag_name}
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__labels-btn')]    5s
+    Click Element    xpath=//button[contains(@class, 'home__labels-btn')]
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'labels-panel__chip labels-panel__chip--clickable')]//span[text()='${tag_name}']    5s
+    Click Element     xpath=//div[contains(@class, 'labels-panel__chip labels-panel__chip--clickable')]//span[text()='${tag_name}']
+    Click Element    xpath=//button[contains(@class, 'labels-panel__close')]
+    Sleep    45s
+
+Get Activity Number
+    [Documentation]    Returns the number of activity/path cards present in the HOME menu.
+    ${activities}=    Get WebElements    xpath=//h3[contains(@class, 'activity-card')]
+    ${count}=    Get Length    ${activities}
+    RETURN    ${count}
