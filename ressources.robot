@@ -408,6 +408,24 @@ Go Offline
     Call Method    ${webdriver}    execute_cdp_cmd    Network.emulateNetworkConditions    ${conditions}
     Wait Until Element Is Visible    xpath=//button[.//span[contains(@class, 'anticon-disconnect')]]    15s
 
+Set Network Speed
+    [Documentation]    Throttle the network using Chrome DevTools Protocol (CDP), for testing behavior under a slow connection instead of going fully offline. Defaults roughly match Chrome DevTools' "Slow 3G" preset (2000ms latency, ~62.5 KB/s down/up). Call "Reset Network Speed" afterwards to remove the throttling.
+    [Arguments]    ${latency}=2000    ${download_throughput}=62500    ${upload_throughput}=62500
+    ${latency}=    Convert To Integer    ${latency}
+    ${download_throughput}=    Convert To Integer    ${download_throughput}
+    ${upload_throughput}=    Convert To Integer    ${upload_throughput}
+    ${seleniumlib}=    Get Library Instance    SeleniumLibrary
+    VAR    ${webdriver}    ${seleniumlib.driver}
+    ${conditions}=    Create Dictionary    offline=${False}    latency=${latency}    downloadThroughput=${download_throughput}    uploadThroughput=${upload_throughput}
+    Call Method    ${webdriver}    execute_cdp_cmd    Network.emulateNetworkConditions    ${conditions}
+
+Reset Network Speed
+    [Documentation]    Remove any network throttling applied via "Set Network Speed" or "Go Offline", restoring a normal, unthrottled connection. A throughput of -1 tells CDP not to limit that direction at all.
+    ${seleniumlib}=    Get Library Instance    SeleniumLibrary
+    VAR    ${webdriver}    ${seleniumlib.driver}
+    ${conditions}=    Create Dictionary    offline=${False}    latency=${0}    downloadThroughput=${-1}    uploadThroughput=${-1}
+    Call Method    ${webdriver}    execute_cdp_cmd    Network.emulateNetworkConditions    ${conditions}
+
 Wait For Activity
     [Documentation]    Wait until the activity/path card identified by the provided title is visible on the home menu.
     [Arguments]    ${activity_title}    ${timeout}=15s
