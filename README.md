@@ -303,3 +303,15 @@ Validates the Audio overlay tool's two content sources on an Augmented Activity.
 
 ## 043_update_propagation_on_import.robot
 Validates that an update made after sharing propagates to an already-imported copy. Account 1 creates an activity and generates a share code; account 2 imports it. Account 1 then reopens the *original* activity (via its card menu's "Edit" action, not the "Open activity" AR-player button), adds a text overlay, and resynchronizes it. Account 2 finally reopens its *imported* copy the same way and asserts the new text is present. Reopening an already-published activity for editing paginates title/instructions/description across separate "Next" steps before reaching the augmentation canvas - unlike the single combined page used during initial creation - handled by the "Reopen Activity Editor" keyword.
+
+## 050_search_activity.robot
+Validates the home menu's search box. Creates two activities whose titles share no common word (the search box matches on individual words, not full substrings, so any shared word would make both cards match either search), then confirms searching one title's exact text shows only its own card, searching the other title swaps which card is shown, and clearing the search restores both.
+
+## 051_empty_animated_augment.robot
+Validates creating an Augmented activity using the built-in animated template image (via "Use template image") instead of snapping a live camera background, confirming the wizard completes and the resulting activity detects successfully.
+
+## 052_tag_filtering.robot
+Validates tag-based filtering on the home grid. Creates an activity and tags it, creates a second, untagged activity, then confirms that filtering by the tag narrows the grid from 2 activities down to just the 1 that carries it.
+
+## 053_sort_activities.robot
+Validates the home menu's "Sort" control (A-Z / Z-A). Creates two activities with alphabetically distinct titles, confirms the default "Sort A-Z" state places the earlier-alphabet title before the later one in the grid's DOM order, then confirms switching to "Sort Z-A" reverses that relative order and switching back to "Sort A-Z" restores it. Comparisons use DOM order (via the "Activity Should Appear Before" keyword) rather than on-screen position, since the app's own UI explicitly warns that its masonry grid layout can visually reposition cards even when the underlying sort is applied correctly.

@@ -965,3 +965,23 @@ Get Activity Number
     ${activities}=    Get WebElements    xpath=//h3[contains(@class, 'activity-card')]
     ${count}=    Get Length    ${activities}
     RETURN    ${count}
+
+Set Sort Order
+    [Documentation]    Open the home menu's "Sort" control and select "Sort A-Z" or "Sort Z-A" (pass ${order}=az or ${order}=za). The app applies the change immediately - there's no confirm button - so this just picks the matching radio option, then closes the popover by clicking the header logo, since re-clicking the Sort button doesn't toggle it closed and Escape doesn't dismiss it either (confirmed by live inspection).
+    [Arguments]    ${order}
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__filter-btn--sort')]    5s
+    Click Element    xpath=//button[contains(@class, 'home__filter-btn--sort')]
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'home__sort-content')]    5s
+    IF    "${order}" == "az"
+        Click Element    xpath=//div[contains(@class, 'home__sort-content')]//label[.//span[text()='Sort A-Z']]
+    ELSE
+        Click Element    xpath=//div[contains(@class, 'home__sort-content')]//label[.//span[text()='Sort Z-A']]
+    END
+    Click Element    xpath=//div[contains(@class, 'ds-header__logo')]
+    Wait Until Element Is Not Visible    xpath=//div[contains(@class, 'home__sort-content')]    5s
+
+Activity Should Appear Before
+    [Documentation]    Assert that the activity/path card titled ${first_title} appears before the one titled ${second_title} in the home grid's DOM order. Used to verify sort order via document order rather than on-screen position, since the app's own "Sort" popover explicitly warns that its masonry layout can visually reposition cards even though the underlying order is correct.
+    [Arguments]    ${first_title}    ${second_title}
+    ${is_before}=    Execute Javascript    var titles=[...document.querySelectorAll("h3.activity-card__title")].map(function(el){return el.textContent.trim();}); return titles.indexOf("${first_title}") < titles.indexOf("${second_title}");
+    Should Be True    ${is_before}    '${first_title}' should appear before '${second_title}' in the grid
