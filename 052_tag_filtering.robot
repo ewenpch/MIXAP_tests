@@ -39,3 +39,40 @@ Create empty activity and filter
     ${activity_number}=    Get Activity Number
     Should Be Equal As Numbers    ${1}    ${activity_number}
     Close Browser
+
+Create activity with tag - Slow 3G
+    Open Web Application
+    Set Network Speed
+    Create Activity
+    Select Activity Type    activity_type=Augmented activity
+    Add Tag to Activity    tag numéro 1
+
+Edit activity details - Slow 3G
+    Edit Activity Title    activité numéro 1 Slow3G
+    Edit Activity Instructions    instruction relative à l'activité numéro 1
+
+Snap the background - Slow 3G
+    Next button
+    Sleep    2s
+    Snap the background
+    Sleep    2s
+    Validate the image
+
+display activity - Slow 3G
+    Next button
+    Sleep    2s
+    Validation button
+    Sleep    2s
+    Next button
+    Sleep    2s
+    Wait For Detection Or Log Miss
+    Click home button
+
+Create empty activity and filter - Slow 3G
+    Create empty augmented activity    activité numéro 2 Slow3G
+    ${activity_number}=    Get Activity Number
+    Should Be Equal As Numbers    ${2}    ${activity_number}
+    Filter by tag    tag numéro 1
+    ${activity_number}=    Get Activity Number
+    Should Be Equal As Numbers    ${1}    ${activity_number}
+    Close Browser

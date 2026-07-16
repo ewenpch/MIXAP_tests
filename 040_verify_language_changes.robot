@@ -32,3 +32,33 @@ Test everything is in Turkish
     Sleep    5s
     Check that the page is in Turkish
     Close Browser
+
+Open application and change language - Slow 3G
+    Open Web Application
+    Set Network Speed
+    Change Language    Français
+    Sleep    5s
+
+Test everything is in French - Slow 3G
+    Check that the page is in French
+
+Test everything is in English - Slow 3G
+    Change Language    English
+    Sleep    5s
+    Check that the page is in English
+
+Test everything is in Danish - Slow 3G
+    Change Language    Dansk
+    Sleep    5s
+    Check that the page is in Danish
+
+Test everything is in Greek - Slow 3G
+    Change Language    Ελληνικά
+    Sleep    5s
+    Check that the page is in Greek
+
+Test everything is in Turkish - Slow 3G
+    Change Language    Türkçe
+    Sleep    5s
+    Check that the page is in Turkish
+    Close Browser

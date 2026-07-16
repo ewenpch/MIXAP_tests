@@ -16,3 +16,17 @@ Create activity
 Synchronize activity
     Synchronize Activity
     Close Browser
+
+Sign in - Slow 3G
+    Open Web Application
+    Set Network Speed
+    Maximize Browser Window
+    Sign In    test@example.com    password123
+    Wait Until Element Is Visible    xpath=//button[.//span[text()='testuser']]    15s
+
+Create activity - Slow 3G
+    Create empty augmented activity   activité numéro 1 Slow3G
+
+Synchronize activity - Slow 3G
+    Synchronize Activity
+    Close Browser
