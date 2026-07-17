@@ -10,8 +10,8 @@ Sign in
     Open Web Application
     Maximize Browser Window
     ${username}=    Generate Random String    10    [LETTERS][NUMBERS]
-    Sign Up    ${username}    ${username}@example.com    password123
-    Wait Until Element Is Visible    xpath=//button[.//span[text()='${username}']]    15s
+    Sign Up    test_${username}    test_${username}@example.com    password123
+    Wait Until Element Is Visible    xpath=//button[.//span[text()='test_${username}']]    15s
 
 Create activity
     Create empty augmented activity   activité numéro 1
@@ -27,7 +27,7 @@ Sign in - Slow 3G
     Maximize Browser Window
     ${username}=    Generate Random String    10    [LETTERS][NUMBERS]
     Sign Up    ${username}    ${username}@example.com    password123
-    Wait Until Element Is Visible    xpath=//button[.//span[text()='${username}']]    15s
+    Wait Until Element Is Visible    xpath=//button[.//span[text()='test_${username}']]    15s
 
 Create activity - Slow 3G
     Create empty augmented activity   activité numéro 1 Slow3G
