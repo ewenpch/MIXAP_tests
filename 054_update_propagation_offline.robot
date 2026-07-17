@@ -49,8 +49,8 @@ Add text to the activity as first account and resynchronize
 Verify the text update propagated to the imported copy when it goes back online
     [Documentation]    Back on account 2: reopen the imported copy and check that the text added by account 1 after the import is now present. The page was left open since the import, so it needs an explicit reload to pick up account 1's resync - the badge doesn't appear via any live-push, only on next fetch (same reasoning as "Find And Open Activity Menu And Edit"'s reload). Closes the browser afterwards - "Open Web Application with alias" does not close a pre-existing browser under the same alias, it just re-attaches to it, so leaving "compte2" open here would make the Slow 3G group below silently reuse this already signed-in session instead of getting its own fresh one.
     Switch Browser    compte2
-    Reload Page
     Go Online
+    Reload Page
     Wait Until Element Is Not Visible    xpath=//div[contains(@class, 'loading-blocker__overlay')]    30s
     Wait Until Element Is Visible    xpath=//div[contains(@class, 'activity-card__status-badge activity-card__status-badge--updated-recent')]    60s
     Close Browser
