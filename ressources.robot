@@ -535,9 +535,9 @@ Get Missing Activity Ids
 Sign In
     [Documentation]    Sign in to the application using the provided email and password. Waits out the "loading-blocker" overlay before returning - the shared test accounts accumulate a lot of activities/paths across repeated runs, and the initial sync after login can take a while, during which the overlay intercepts clicks on anything underneath it (e.g. "New activity").
     [Arguments]    ${email}    ${password}
-    Wait Until Element Is Visible    xpath=//button[.//span[contains(@class, 'anticon anticon-user')]]    15s
+    Wait Until Element Is Visible    xpath=//button[.//span[contains(@class, 'anticon anticon-user')]]    30s
     Click Element    xpath=//button[.//span[contains(@class, 'anticon anticon-user')]]
-    Wait Until Element Is Visible    xpath=//button[text()='Login']    15s
+    Wait Until Element Is Visible    xpath=//button[text()='Login']    30s
     Click Element    xpath=//button[text()='Login']
     Input Text    xpath=//input[@placeholder='you@company.com']    ${email}
     Input Text    xpath=//input[@placeholder='••••••••']    ${password}
@@ -546,11 +546,11 @@ Sign In
     Wait Until Element Is Not Visible    xpath=//div[contains(@class, 'loading-blocker__overlay')]    60s
 
 Sign Up
-    [Documentation]    Sign up for a new account using the provided username, email and password
+    [Documentation]    Sign up for a new account using the provided username, email and password. Waits are generous (30s) on the two panel-opening steps since under "Set Network Speed" throttling the login/signup panel can take a while to render, and this is called much more often now that most tests sign up a fresh random account instead of signing into a shared one.
     [Arguments]    ${username}    ${email}    ${password}
-    Wait Until Element Is Visible    xpath=//button[.//span[contains(@class, 'anticon anticon-user')]]    15s
+    Wait Until Element Is Visible    xpath=//button[.//span[contains(@class, 'anticon anticon-user')]]    30s
     Click Element    xpath=//button[.//span[contains(@class, 'anticon anticon-user')]]
-    Wait Until Element Is Visible    xpath=//button[text()='Sign up']    15s
+    Wait Until Element Is Visible    xpath=//button[text()='Sign up']    30s
     Click Element    xpath=//button[text()='Sign up']
     Wait Until Element Is Visible    xpath=//input[@placeholder='your_username']    15s
     Input Text    xpath=//input[@placeholder='your_username']    ${username}
