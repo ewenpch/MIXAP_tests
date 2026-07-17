@@ -13,7 +13,7 @@ Create activity and share as first account
     [Documentation]    Account 1 creates an activity and generates a share code for it. Uses a freshly signed-up, randomly-generated account instead of one of the shared test accounts, so this run doesn't add to their ever-growing history.
     Open Web Application with alias    compte1
     ${username1}=    Generate Random String    10    [LETTERS][NUMBERS]
-    Sign Up    ${username1}    ${username1}@example.com    password123
+    Sign Up    test_${username1}    test_${username1}@example.com    password123
     Sleep    15s
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__new-activity-btn')]    15s
     ${run_suffix}=    Generate Random String    8    [LETTERS][NUMBERS]
@@ -28,7 +28,7 @@ Import activity as second account
     [Documentation]    Account 2 imports the activity shared by account 1 using the share code. Uses a second freshly signed-up, randomly-generated account instead of one of the shared test accounts, so this run doesn't add to their ever-growing history.
     Open Web Application with alias    compte2
     ${username2}=    Generate Random String    10    [LETTERS][NUMBERS]
-    Sign Up    ${username2}    ${username2}@example.com    password123
+    Sign Up    test_${username2}    test_${username2}@example.com    password123
     Import Activity    ${sharecode}
     Sleep    6s
 
@@ -52,7 +52,7 @@ Create activity and share as first account - Slow 3G
     Open Web Application with alias    compte1
     Set Network Speed
     ${username1}=    Generate Random String    10    [LETTERS][NUMBERS]
-    Sign Up    ${username1}    ${username1}@example.com    password123
+    Sign Up    test_${username1}    test_${username1}@example.com    password123
     Sleep    15s
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__new-activity-btn')]    15s
     ${run_suffix}=    Generate Random String    8    [LETTERS][NUMBERS]
@@ -68,7 +68,7 @@ Import activity as second account - Slow 3G
     Open Web Application with alias    compte2
     Set Network Speed
     ${username2}=    Generate Random String    10    [LETTERS][NUMBERS]
-    Sign Up    ${username2}    ${username2}@example.com    password123
+    Sign Up    test_${username2}    test_${username2}@example.com    password123
     Import Activity    ${sharecode}
     Sleep    6s
 
