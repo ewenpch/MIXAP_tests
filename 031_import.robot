@@ -1,6 +1,7 @@
 *** Settings ***
 Library    SeleniumLibrary
 Library    OperatingSystem
+Library    String
 Resource       ./ressources.robot
 
 *** Variables ***
@@ -8,8 +9,10 @@ ${sharecode}    None
 
 *** Test Cases ***
 Create activity and share
+    [Documentation]    Uses a freshly signed-up, randomly-generated account instead of one of the shared test accounts, so this run doesn't add to their ever-growing history.
     Open Web Application
-    Sign In    test@example.com   password123
+    ${username1}=    Generate Random String    10    [LETTERS][NUMBERS]
+    Sign Up    ${username1}    ${username1}@example.com    password123
     Sleep    15s
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__new-activity-btn')]    15s
     Create empty augmented activity    activité numéro 1
@@ -18,8 +21,10 @@ Create activity and share
     Close Browser
 
 Import activity with share code
+    [Documentation]    Uses a second freshly signed-up, randomly-generated account instead of one of the shared test accounts, so this run doesn't add to their ever-growing history.
     Open Web Application
-    Sign In    test3@example.com   password123
+    ${username2}=    Generate Random String    10    [LETTERS][NUMBERS]
+    Sign Up    ${username2}    ${username2}@example.com    password123
     Import Activity    ${sharecode}
     Sleep    2s
 
@@ -34,9 +39,11 @@ Launch imported activity
     Close Browser
 
 Create activity and share - Slow 3G
+    [Documentation]    Uses a freshly signed-up, randomly-generated account instead of one of the shared test accounts, so this run doesn't add to their ever-growing history.
     Open Web Application
     Set Network Speed
-    Sign In    test@example.com   password123
+    ${username1}=    Generate Random String    10    [LETTERS][NUMBERS]
+    Sign Up    ${username1}    ${username1}@example.com    password123
     Sleep    15s
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__new-activity-btn')]    15s
     Create empty augmented activity    activité numéro 1 Slow3G
@@ -45,9 +52,11 @@ Create activity and share - Slow 3G
     Close Browser
 
 Import activity with share code - Slow 3G
+    [Documentation]    Uses a second freshly signed-up, randomly-generated account instead of one of the shared test accounts, so this run doesn't add to their ever-growing history.
     Open Web Application
     Set Network Speed
-    Sign In    test3@example.com   password123
+    ${username2}=    Generate Random String    10    [LETTERS][NUMBERS]
+    Sign Up    ${username2}    ${username2}@example.com    password123
     Import Activity    ${sharecode}
     Sleep    2s
 

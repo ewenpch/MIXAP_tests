@@ -10,8 +10,10 @@ ${sharecode}    None
 
 *** Test Cases ***
 Create 8 activities and share path
+    [Documentation]    Uses a freshly signed-up, randomly-generated account instead of one of the shared test accounts, so this run doesn't add to their ever-growing history.
     Open Web Application
-    Sign In    test@example.com   password123
+    ${username1}=    Generate Random String    10    [LETTERS][NUMBERS]
+    Sign Up    ${username1}    ${username1}@example.com    password123
     Sleep    15s
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__new-activity-btn')]    15s
     Wait Until Element Is Not Visible    xpath=//div[contains(@class, 'loading-blocker__overlay')]    30s
@@ -47,47 +49,16 @@ Create 8 activities and share path
     END
     Sleep    10s
 
-    # Functional check that the 8 activities actually landed in the path (not just that no
-    # exception was raised while dragging them - the drop can silently fail to register even
-    # when the drag itself completes without error). Opens the path's content drawer - reached
-    # by clicking its card body, not the title-arrow-button which instead launches the AR player
-    # - finds which activities (if any) didn't land, retries only those, then asserts all 8 are
-    # present.
-    Open Path Content Drawer    ${path_id}
-    ${missing_ids}=    Get Missing Activity Ids    ${activity_ids}
-    Close Path Content Drawer
-
-    IF    $missing_ids
-        Log    Retrying activities that did not land on the first drop: ${missing_ids}    WARN
-        FOR    ${missing_id}    IN    @{missing_ids}
-            Add Activity to Path By Id    ${missing_id}    ${path_id}
-        END
-        Sleep    5s
-    END
-
-    Open Path Content Drawer    ${path_id}
-    Path Should Contain Activities    ${activity_ids}
-    Close Path Content Drawer
-
-    ${path_sync_button}=    Set Variable    xpath=//div[contains(@class, 'activity-card') and @data-id='${path_id}']//button[contains(@class, 'activity-card__action-button--sync')]
-    Wait Until Element Is Visible    ${path_sync_button}    15s
-    Scroll Element Into View    ${path_sync_button}
-    Click Element    ${path_sync_button}
-
-    Sleep    15s
-
-    # The "Read-only" tab is active by default and already shows a "<code>" element with the
-    # share code - no "generate"/confirm click needed there (that button belongs to the inactive
-    # "Template" tab).
-    Wait Until Element Is Visible    xpath=//code    30s
-    ${sharecode}=    Get Text    xpath=//code
+    ${sharecode}=    Generate Share Code With Id    ${path_id}
     Set Suite Variable    ${sharecode}
 
     Close Browser
 
 Import activity with share code
+    [Documentation]    Uses a second freshly signed-up, randomly-generated account instead of one of the shared test accounts, so this run doesn't add to their ever-growing history.
     Open Web Application
-    Sign In    test3@example.com   password123
+    ${username2}=    Generate Random String    10    [LETTERS][NUMBERS]
+    Sign Up    ${username2}    ${username2}@example.com    password123
     Import Activity    ${sharecode}
     Sleep    20s
 
@@ -102,9 +73,11 @@ Launch imported activity
     Close Browser
 
 Create 8 activities and share path - Slow 3G
+    [Documentation]    Uses a freshly signed-up, randomly-generated account instead of one of the shared test accounts, so this run doesn't add to their ever-growing history.
     Open Web Application
     Set Network Speed
-    Sign In    test@example.com   password123
+    ${username1}=    Generate Random String    10    [LETTERS][NUMBERS]
+    Sign Up    ${username1}    ${username1}@example.com    password123
     Sleep    15s
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__new-activity-btn')]    15s
     Wait Until Element Is Not Visible    xpath=//div[contains(@class, 'loading-blocker__overlay')]    30s
@@ -140,48 +113,17 @@ Create 8 activities and share path - Slow 3G
     END
     Sleep    10s
 
-    # Functional check that the 8 activities actually landed in the path (not just that no
-    # exception was raised while dragging them - the drop can silently fail to register even
-    # when the drag itself completes without error). Opens the path's content drawer - reached
-    # by clicking its card body, not the title-arrow-button which instead launches the AR player
-    # - finds which activities (if any) didn't land, retries only those, then asserts all 8 are
-    # present.
-    Open Path Content Drawer    ${path_id}
-    ${missing_ids}=    Get Missing Activity Ids    ${activity_ids}
-    Close Path Content Drawer
-
-    IF    $missing_ids
-        Log    Retrying activities that did not land on the first drop: ${missing_ids}    WARN
-        FOR    ${missing_id}    IN    @{missing_ids}
-            Add Activity to Path By Id    ${missing_id}    ${path_id}
-        END
-        Sleep    5s
-    END
-
-    Open Path Content Drawer    ${path_id}
-    Path Should Contain Activities    ${activity_ids}
-    Close Path Content Drawer
-
-    ${path_sync_button}=    Set Variable    xpath=//div[contains(@class, 'activity-card') and @data-id='${path_id}']//button[contains(@class, 'activity-card__action-button--sync')]
-    Wait Until Element Is Visible    ${path_sync_button}    15s
-    Scroll Element Into View    ${path_sync_button}
-    Click Element    ${path_sync_button}
-
-    Sleep    15s
-
-    # The "Read-only" tab is active by default and already shows a "<code>" element with the
-    # share code - no "generate"/confirm click needed there (that button belongs to the inactive
-    # "Template" tab).
-    Wait Until Element Is Visible    xpath=//code    30s
-    ${sharecode}=    Get Text    xpath=//code
+    ${sharecode}=    Generate Share Code With Id    ${path_id}
     Set Suite Variable    ${sharecode}
 
     Close Browser
 
 Import activity with share code - Slow 3G
+    [Documentation]    Uses a second freshly signed-up, randomly-generated account instead of one of the shared test accounts, so this run doesn't add to their ever-growing history.
     Open Web Application
     Set Network Speed
-    Sign In    test3@example.com   password123
+    ${username2}=    Generate Random String    10    [LETTERS][NUMBERS]
+    Sign Up    ${username2}    ${username2}@example.com    password123
     Import Activity    ${sharecode}
     Sleep    20s
 

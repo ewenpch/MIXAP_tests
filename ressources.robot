@@ -559,6 +559,16 @@ Sign Up
     Click Element    xpath=//button[text()='Create account']
     Sleep    5s
 
+Sign Out
+    [Documentation]    Sign out of the currently signed-in account via the header user menu, confirming the "Sign out?" dialog that follows. Used to exercise the sign-in flow against a freshly signed-up account instead of a shared one: sign up, sign out, then sign back in with the same credentials.
+    Wait Until Element Is Visible    xpath=//button[.//span[contains(@class, 'anticon anticon-user')]]    15s
+    Click Element    xpath=//button[.//span[contains(@class, 'anticon anticon-user')]]
+    Wait Until Element Is Visible    xpath=//span[contains(@class, 'ant-dropdown-menu-title-content') and text()='Sign out']    5s
+    ${clicked}=    Execute Javascript    var items=[...document.querySelectorAll('.ant-dropdown-menu-title-content')].filter(function(el){return el.textContent.trim()==='Sign out' && el.offsetParent!==null;}); if(items.length===0){return false;} items[0].click(); return true;
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'confirmation-dialog__button--danger')]    5s
+    Click Element    xpath=//button[contains(@class, 'confirmation-dialog__button--danger')]
+    Wait Until Element Is Not Visible    xpath=//button[contains(@class, 'confirmation-dialog__button--danger')]    5s
+
 Open Import Modal
     [Documentation]    Click the import button and verify the import modal actually opened. The click is occasionally swallowed by the app, so this is retried by its caller.
     Click Element    xpath=//button[contains(@class, 'home__import-btn')]
@@ -584,6 +594,24 @@ Generate Share Code
     [Documentation]    Synchronize an activity/path, open its sharing panel and return the read-only share code. Pass ${activity_title} to check the card exists and scope the sync to it specifically when more than one card could be on screen. Verified live: the "Read-only" tab is active by default and already displays a "<code>" element with the share code - no "generate"/confirm click needed (that button belongs to the inactive "Template" tab, which is why waiting on it used to time out).
     [Arguments]    ${activity_title}=${EMPTY}
     Synchronize Activity    ${activity_title}
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]    15s
+    Click Element    xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'ant-btn-dangerous')]    15s
+    Click Element    xpath=//button[contains(@class, 'ant-btn-dangerous')]
+    Wait Until Element Is Visible    xpath=//code    30s
+    ${code}=    Get Text    xpath=//code
+    RETURN    ${code}
+
+Generate Share Code With Id
+    [Documentation]    Same as "Generate Share Code", but scopes the sync button to the card's "data-id" instead of its title. Use this whenever several look-alike cards (same title, duplicates, stale data from earlier runs) could be on screen.
+    [Arguments]    ${card_id}
+    ${sync_button}=    Set Variable    xpath=//div[contains(@class, 'activity-card') and @data-id='${card_id}']//button[contains(@class, 'activity-card__action-button--sync')]
+    ${uploaded_button}=    Set Variable    xpath=//div[contains(@class, 'activity-card') and @data-id='${card_id}']//button[contains(@class, 'activity-card__action-button--sync uploaded')]
+    Wait Until Element Is Visible    ${sync_button}    15s
+    Scroll Element Into View    ${sync_button}
+    Click Element    ${sync_button}
+    Sleep    5s
+    Wait Until Element Is Visible    ${uploaded_button}    15s
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]    15s
     Click Element    xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'ant-btn-dangerous')]    15s
