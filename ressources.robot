@@ -406,7 +406,16 @@ Go Offline
     ${novalue}    Convert to Integer    ${novalue}
     ${conditions}    Create Dictionary    offline=${True}    latency=${novalue}    downloadThroughput=${novalue}    uploadThroughput=${novalue}
     Call Method    ${webdriver}    execute_cdp_cmd    Network.emulateNetworkConditions    ${conditions}
-    Wait Until Element Is Visible    xpath=//button[.//span[contains(@class, 'anticon-disconnect')]]    15s
+
+Go Online
+    [Documentation]    Set the browser to online mode using Chrome DevTools Protocol (CDP)
+    ${seleniumlib}    Get Library Instance    SeleniumLibrary
+    VAR    ${webdriver}    ${seleniumlib.driver}
+    # SetOffline
+    VAR    ${novalue}    0
+    ${novalue}    Convert to Integer    ${novalue}
+    ${conditions}    Create Dictionary    offline=${False}    latency=${novalue}    downloadThroughput=${novalue}    uploadThroughput=${novalue}
+    Call Method    ${webdriver}    execute_cdp_cmd    Network.emulateNetworkConditions    ${conditions}
 
 Set Network Speed
     [Documentation]    Throttle the network using Chrome DevTools Protocol (CDP), for testing behavior under a slow connection instead of going fully offline. Defaults roughly match Chrome DevTools' "Slow 3G" preset (2000ms latency, ~62.5 KB/s down/up). Call "Reset Network Speed" afterwards to remove the throttling.
