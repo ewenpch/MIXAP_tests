@@ -559,6 +559,16 @@ Sign Up
     Click Element    xpath=//button[text()='Create account']
     Sleep    5s
 
+Sign Out
+    [Documentation]    Sign out of the currently signed-in account via the header user menu, confirming the "Sign out?" dialog that follows. Used to exercise the sign-in flow against a freshly signed-up account instead of a shared one: sign up, sign out, then sign back in with the same credentials.
+    Wait Until Element Is Visible    xpath=//button[.//span[contains(@class, 'anticon anticon-user')]]    15s
+    Click Element    xpath=//button[.//span[contains(@class, 'anticon anticon-user')]]
+    Wait Until Element Is Visible    xpath=//span[contains(@class, 'ant-dropdown-menu-title-content') and text()='Sign out']    5s
+    ${clicked}=    Execute Javascript    var items=[...document.querySelectorAll('.ant-dropdown-menu-title-content')].filter(function(el){return el.textContent.trim()==='Sign out' && el.offsetParent!==null;}); if(items.length===0){return false;} items[0].click(); return true;
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'confirmation-dialog__button--danger')]    5s
+    Click Element    xpath=//button[contains(@class, 'confirmation-dialog__button--danger')]
+    Wait Until Element Is Not Visible    xpath=//button[contains(@class, 'confirmation-dialog__button--danger')]    5s
+
 Open Import Modal
     [Documentation]    Click the import button and verify the import modal actually opened. The click is occasionally swallowed by the app, so this is retried by its caller.
     Click Element    xpath=//button[contains(@class, 'home__import-btn')]
