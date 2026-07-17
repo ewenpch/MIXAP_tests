@@ -602,6 +602,24 @@ Generate Share Code
     ${code}=    Get Text    xpath=//code
     RETURN    ${code}
 
+Generate Share Code With Id
+    [Documentation]    Same as "Generate Share Code", but scopes the sync button to the card's "data-id" instead of its title. Use this whenever several look-alike cards (same title, duplicates, stale data from earlier runs) could be on screen.
+    [Arguments]    ${card_id}
+    ${sync_button}=    Set Variable    xpath=//div[contains(@class, 'activity-card') and @data-id='${card_id}']//button[contains(@class, 'activity-card__action-button--sync')]
+    ${uploaded_button}=    Set Variable    xpath=//div[contains(@class, 'activity-card') and @data-id='${card_id}']//button[contains(@class, 'activity-card__action-button--sync uploaded')]
+    Wait Until Element Is Visible    ${sync_button}    15s
+    Scroll Element Into View    ${sync_button}
+    Click Element    ${sync_button}
+    Sleep    5s
+    Wait Until Element Is Visible    ${uploaded_button}    15s
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]    15s
+    Click Element    xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'ant-btn-dangerous')]    15s
+    Click Element    xpath=//button[contains(@class, 'ant-btn-dangerous')]
+    Wait Until Element Is Visible    xpath=//code    30s
+    ${code}=    Get Text    xpath=//code
+    RETURN    ${code}
+
 Generate Template Share Code
     [Documentation]    Synchronize an activity/path, open its sharing panel, switch to the "Template" tab and return the generated template share code. Unlike the read-only code (shown immediately), the Template tab requires clicking "Generate Template Code" and then confirming an irreversible-action warning dialog before a code appears - verified live, no "<code>" element exists there until both are clicked. Pass ${activity_title} to scope the sync to a specific card when more than one could be on screen.
     [Arguments]    ${activity_title}=${EMPTY}
