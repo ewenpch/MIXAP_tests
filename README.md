@@ -230,11 +230,11 @@ Validates the online creation wizard for a "Guided Path". It initializes a new p
 ## 020_create_empty_guided_path_offline.robot
 Ensures that the pedagogical wizard remains completely operational while offline, allowing teachers or authors to configure and locally save a "Guided Path" without an active internet connection.
 
-## 021_add_activities_to_path.robot
-Validates the online layout management and sequencing system. The test creates two separate empty activities and an empty learning path, then tests the user experience by using drag-and-drop operations to successfully assign both activities into the path.
+## 021_add_activity_to_path.robot
+Validates the online drag-and-drop workflow for assigning an activity to a learning path, both under normal conditions and under throttled "Slow 3G" network conditions. It creates one empty activity and one empty path, then drags the activity onto the path's card.
 
-## 021_add_activities_to_path_offline.robot
-Verifies that the interactive drag-and-drop workflow for assigning multiple activities into a learning path functions reliably in an offline state using local layout persistence.
+## 021_add_activity_to_path_offline.robot
+Verifies that the same drag-and-drop workflow for assigning an activity to a learning path functions reliably while offline.
 
 ## 022_sign_up.robot
 Tests the user registration flow within the application. It opens the user identity interface, populates username, email, and password credentials, submits the registration form, and validates successful account creation by checking for the authenticated user session indicator.
@@ -301,8 +301,29 @@ Validates the application's language switcher across five locales (French, Engli
 ## 041_audio_tool.robot
 Validates the Audio overlay tool's two content sources on an Augmented Activity. The microphone scenario opens the Audio tool, starts a recording using Chrome's fake microphone feed (`--use-file-for-fake-audio-capture`, configured in `Set Chrome Options` to play back `assets/moo1.wav`), stops the recording, confirms it, and plays it back. The upload scenario instead attaches a local audio file directly to the tool's hidden file input (`id=basic_file`), bypassing the native OS file picker that Selenium cannot drive. The record/pause button is located by its Material icon `data-testid` (`CircleIcon` while idle, `PauseIcon` while recording) rather than by class, since both states share the exact same button element and CSS classes.
 
+## 042_restore_path.robot
+Validates the delete/restore recovery flow for a learning path, both under normal conditions and under throttled "Slow 3G" network conditions. It creates an empty path, deletes it (capturing its "data-id" from "Delete Activity Or Path"), then restores it from the Trash via that same id and confirms the restore action succeeds.
+
 ## 043_update_propagation_on_import.robot
 Validates that an update made after sharing propagates to an already-imported copy. Account 1 creates an activity and generates a share code; account 2 imports it. Account 1 then reopens the *original* activity (via its card menu's "Edit" action, not the "Open activity" AR-player button), adds a text overlay, and resynchronizes it. Account 2 finally reopens its *imported* copy the same way and asserts the new text is present. Reopening an already-published activity for editing paginates title/instructions/description across separate "Next" steps before reaching the augmentation canvas - unlike the single combined page used during initial creation - handled by the "Reopen Activity Editor" keyword.
+
+## 044_verify_language_change_offline.robot
+Repeats the language switcher checks from 040_verify_language_changes.robot (French, English, Danish, Greek, Turkish) entirely offline, confirming the i18n strings and locale switching work purely from local client-side state without a server round-trip.
+
+## 045_audio_tool_offline.robot
+Repeats the two Audio overlay scenarios from 041_audio_tool.robot (microphone recording and file upload) entirely offline, confirming the Audio tool's recording, playback, and file-attachment paths don't depend on network connectivity.
+
+## 046_load_offline.robot
+Repeats the stress test from 028_load.robot (eight augmented activities created in a row, then dragged into a single path) entirely offline, confirming the creation and drag-and-drop-into-path pipeline holds up under a larger batch of items without any network connectivity.
+
+## 047_tag_offline.robot
+Repeats the tag/label workflow from 029_tag.robot (attach a tag, then remove it) entirely offline, confirming the labels panel works purely from local state.
+
+## 048_duplicate_offline.robot
+Repeats the activity duplication check from 034_duplicate.robot entirely offline: it creates a single empty activity, duplicates it through its card's menu, and asserts the home grid shows two activity cards.
+
+## 049_update_propagation_on_template_import.robot
+The negative counterpart to 043_update_propagation_on_import.robot, run both under normal and throttled "Slow 3G" network conditions. Account 1 creates an activity and generates a *template* share code (not a read-only one) for it; account 2 imports it. Account 1 then reopens the original activity, adds a text overlay, and resynchronizes it. Unlike the read-only import case, a template import is an independent copy with no link back to the original, so account 2's copy must NOT show an "updated recently" badge after account 1's resync - confirming template imports are correctly decoupled from their source.
 
 ## 050_search_activity.robot
 Validates the home menu's search box. Creates two activities whose titles share no common word (the search box matches on individual words, not full substrings, so any shared word would make both cards match either search), then confirms searching one title's exact text shows only its own card, searching the other title swaps which card is shown, and clearing the search restores both.
@@ -315,3 +336,15 @@ Validates tag-based filtering on the home grid. Creates an activity and tags it,
 
 ## 053_sort_activities.robot
 Validates the home menu's "Sort" control (A-Z / Z-A). Creates two activities with alphabetically distinct titles, confirms the default "Sort A-Z" state places the earlier-alphabet title before the later one in the grid's DOM order, then confirms switching to "Sort Z-A" reverses that relative order and switching back to "Sort A-Z" restores it. Comparisons use DOM order (via the "Activity Should Appear Before" keyword) rather than on-screen position, since the app's own UI explicitly warns that its masonry grid layout can visually reposition cards even when the underlying sort is applied correctly.
+
+## 054_update_propagation_offline.robot
+The offline counterpart to 043_update_propagation_on_import.robot. The same create/share/import/update/verify sequence is run with both accounts going offline around each local action (activity creation, adding the text overlay) and back online only to sync/resync/reload, confirming the update-propagation behavior holds even when the edits themselves happen while disconnected.
+
+## 055_sort_activities_offline.robot
+Repeats the sort-order checks from 053_sort_activities.robot (default A-Z, switch to Z-A, switch back to A-Z) entirely offline, confirming the "Sort" control's effect on DOM order works purely from local state.
+
+## 056_tag_filtering_offline.robot
+Repeats the tag-filtering check from 052_tag_filtering.robot entirely offline: creates a tagged activity and a second, untagged one, then confirms filtering by the tag narrows the grid down to just the tagged activity.
+
+## 057_create_activity_offline_while_connected.robot
+Validates that an activity created while offline gets synced to the cloud automatically once connectivity returns, without any explicit sync action from the user. Signs up a fresh account, goes offline, creates an empty activity, then goes back online and signs out without ever touching the sync button. It then signs back into the same account in a brand new browser session and confirms the activity is there, proving the app queued and flushed the sync on its own.
