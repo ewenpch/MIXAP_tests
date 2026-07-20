@@ -599,16 +599,22 @@ Synchronize Activity
     Sleep    5s
     Wait Until Element Is Visible    ${uploaded_button}    15s
 
-Generate Share Code
-    [Documentation]    Synchronize an activity/path, open its sharing panel and return the read-only share code. Pass ${activity_title} to check the card exists and scope the sync to it specifically when more than one card could be on screen. Verified live: the "Read-only" tab is active by default and already displays a "<code>" element with the share code - no "generate"/confirm click needed (that button belongs to the inactive "Template" tab, which is why waiting on it used to time out).
-    [Arguments]    ${activity_title}=${EMPTY}
-    Synchronize Activity    ${activity_title}
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]    15s
-    Click Element    xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]
+Get Share Code From Sync Modal
+    [Documentation]    From an already-open Cloud Sync Status modal: click the given "generate" button locator, confirm the resulting irreversible-action warning dialog, then read and return the "<code>" element that appears. Shared tail of "Generate Share Code", "Generate Share Code With Id" and "Generate Template Share Code" - only the "generate" button itself differs between the "Read-only" tab (default) and the "Template" tab, everything after it is identical.
+    [Arguments]    ${generate_button_locator}=xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]
+    Wait Until Element Is Visible    ${generate_button_locator}    15s
+    Click Element    ${generate_button_locator}
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'ant-btn-dangerous')]    15s
     Click Element    xpath=//button[contains(@class, 'ant-btn-dangerous')]
     Wait Until Element Is Visible    xpath=//code    30s
     ${code}=    Get Text    xpath=//code
+    RETURN    ${code}
+
+Generate Share Code
+    [Documentation]    Synchronize an activity/path, open its sharing panel and return the read-only share code (shown on the default "Read-only" tab). Pass ${activity_title} to check the card exists and scope the sync to it specifically when more than one card could be on screen.
+    [Arguments]    ${activity_title}=${EMPTY}
+    Synchronize Activity    ${activity_title}
+    ${code}=    Get Share Code From Sync Modal
     RETURN    ${code}
 
 Generate Share Code With Id
@@ -621,12 +627,7 @@ Generate Share Code With Id
     Click Element    ${sync_button}
     Sleep    5s
     Wait Until Element Is Visible    ${uploaded_button}    15s
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]    15s
-    Click Element    xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'ant-btn-dangerous')]    15s
-    Click Element    xpath=//button[contains(@class, 'ant-btn-dangerous')]
-    Wait Until Element Is Visible    xpath=//code    30s
-    ${code}=    Get Text    xpath=//code
+    ${code}=    Get Share Code From Sync Modal
     RETURN    ${code}
 
 Generate Template Share Code
@@ -635,12 +636,7 @@ Generate Template Share Code
     Synchronize Activity    ${activity_title}
     Wait Until Element Is Visible    xpath=//div[contains(@class,'ant-tabs-tab') and .//text()='Template']    15s
     Click Element    xpath=//div[contains(@class,'ant-tabs-tab') and .//text()='Template']
-    Wait Until Element Is Visible    xpath=//button[contains(., 'Generate Template Code')]    15s
-    Click Element    xpath=//button[contains(., 'Generate Template Code')]
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'ant-btn-dangerous')]    15s
-    Click Element    xpath=//button[contains(@class, 'ant-btn-dangerous')]
-    Wait Until Element Is Visible    xpath=//code    30s
-    ${code}=    Get Text    xpath=//code
+    ${code}=    Get Share Code From Sync Modal    xpath=//button[contains(., 'Generate Template Code')]
     RETURN    ${code}
 
 Import Activity
@@ -995,7 +991,6 @@ Filter by tag
     Wait Until Element Is Visible    xpath=//div[contains(@class, 'labels-panel__chip labels-panel__chip--clickable')]//span[text()='${tag_name}']    5s
     Click Element     xpath=//div[contains(@class, 'labels-panel__chip labels-panel__chip--clickable')]//span[text()='${tag_name}']
     Click Element    xpath=//button[contains(@class, 'labels-panel__close')]
-    Sleep    45s
 
 Get Activity Number
     [Documentation]    Returns the number of activity/path cards present in the HOME menu.
