@@ -10,7 +10,7 @@ ${run_suffix}    value
 
 *** Test Cases ***
 Create activity and share as first account
-    [Documentation]    Account 1 creates an activity and generates a template share code for it. Uses a freshly signed-up, randomly-generated account instead of one of the shared test accounts, so this run doesn't add to their ever-growing history.
+    [Documentation]    Signs up a fresh account, goes offline right after sign-in, creates an activity while offline, then goes back online and signs out - without ever explicitly syncing. Uses a freshly signed-up, randomly-generated account instead of one of the shared test accounts, so this run doesn't add to their ever-growing history.
     Open Web Application
     ${username1}=    Generate Random String    10    [LETTERS][NUMBERS]
     Set Suite Variable    ${username1}
@@ -27,7 +27,7 @@ Create activity and share as first account
     Close Browser
 
 Open Account back to see if activity is there
-    [Documentation]    Account 2 imports the activity shared by account 1 using the template share code. Uses a second freshly signed-up, randomly-generated account instead of one of the shared test accounts, so this run doesn't add to their ever-growing history.
+    [Documentation]    Signs back into the same account in a brand new browser session and confirms the activity that was created offline (and never explicitly synced) did get uploaded to the cloud once the connection came back, purely from the app's own background sync - not from any action taken by the test.
     Open Web Application
     Sign In    test_${username1}@example.com    password123
     Wait For Activity    empty activity ${run_suffix}    10s
