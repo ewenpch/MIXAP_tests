@@ -139,6 +139,11 @@ Wait For Detection Or Log Miss
     ${status}    ${message}=    Run Keyword And Ignore Error    Wait for detection
     Run Keyword If    '${status}' == 'FAIL'    Log    ⚠️ Expected behavior: The element is still visible after 25s miss detection.    WARN
 
+Augmentation Should Contain Text
+    [Documentation]    Assert that the given text is rendered as an overlay within the currently open augmentation's canvas. Checks rendered DOM presence rather than reopening the text tool's editor to read it back, since clicking the "Text" toolbar button always adds a brand new text overlay instead of reselecting an existing one - there is no known way to reopen an existing text element for editing. UNVERIFIED: the "auras__html-container" class is confirmed used for this kind of canvas-overlaid HTML content in Information Layers activities (see "Check if Layer has content"), but is only assumed - not confirmed live - to be shared by Augmented activities' text overlays. Adjust the locator here first if this fails.
+    [Arguments]    ${expected_text}
+    Wait Until Element Is Visible    xpath=//*[contains(@class, 'auras__html-container') and contains(., '${expected_text}')]    15s
+
 Add Text To Augmentation
     [Documentation]    Add a text overlay to the currently open augmentation, using the provided text content. Set ${click_next}=${False} when reopening an already-published activity via "Reopen Activity Editor" - there is no further wizard step to advance to there, so close the editor explicitly afterwards (e.g. with "Click home button") instead.
     [Arguments]    ${text}=mon texte par défaut    ${click_next}=${True}
