@@ -351,3 +351,9 @@ Validates that an activity created while offline gets synced to the cloud automa
 
 ## 058_offline_text_edit_after_online_creation.robot
 Validates that a text overlay added to an activity while online remains present and editable after going offline. Creates an activity with a text overlay while online, then reopens the activity's editor - which requires connectivity, since "Reopen Activity Editor" reloads the page internally - and only then goes offline, confirming the original text is still rendered via "Augmentation Should Contain Text" (DOM presence). Still offline, it clicks directly on the rendered text overlay itself (not the "Text" toolbar button, which is for adding a brand new element and does nothing when one is already selected - confirmed live via a failed run's screenshot) to reopen it pre-filled for editing, then replaces its content and confirms the new value took, proving the editor stays fully functional against local/cached state after the connection drops.
+
+## 059_offline_image_after_online_creation.robot
+The image counterpart to 058_offline_text_edit_after_online_creation.robot. Creates an activity with an image overlay while online, then reopens the activity - while still online, for the same page-reload-needs-connectivity reason as 058 - and only then goes offline. Since an image overlay has no meaningful text value to match on, presence is confirmed via "Get Augmentation Content Count" instead of content matching: the rendered overlay count must be 1.
+
+## 060_offline_audio_after_online_creation.robot
+The audio counterpart to 058_offline_text_edit_after_online_creation.robot. Creates an activity with an uploaded audio overlay (via the same tool selectors as 041_audio_tool.robot) while online, then reopens the activity - while still online, for the same page-reload-needs-connectivity reason as 058 - and only then goes offline, confirming the audio overlay's rendered count is 1 via "Get Augmentation Content Count".

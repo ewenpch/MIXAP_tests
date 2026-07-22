@@ -140,9 +140,15 @@ Wait For Detection Or Log Miss
     Run Keyword If    '${status}' == 'FAIL'    Log    ⚠️ Expected behavior: The element is still visible after 25s miss detection.    WARN
 
 Augmentation Should Contain Text
-    [Documentation]    Assert that the given text is rendered as an overlay within the currently open augmentation's canvas. Checks rendered DOM presence rather than reopening the text tool's editor to read it back, since clicking the "Text" toolbar button always adds a brand new text overlay instead of reselecting an existing one - there is no known way to reopen an existing text element for editing. UNVERIFIED: the "auras__html-container" class is confirmed used for this kind of canvas-overlaid HTML content in Information Layers activities (see "Check if Layer has content"), but is only assumed - not confirmed live - to be shared by Augmented activities' text overlays. Adjust the locator here first if this fails.
+    [Documentation]    Assert that the given text is rendered as an overlay within the currently open augmentation's canvas. Checks rendered DOM presence rather than reopening the text tool's editor to read it back, since clicking the "Text" toolbar button always adds a brand new text overlay instead of reselecting an existing one - there is no known way to reopen an existing text element for editing. Confirmed live (058_offline_text_edit_after_online_creation.robot): the "auras__html-container" class - already used for canvas-overlaid content in Information Layers activities, see "Check if Layer has content" - is shared by Augmented activities' text overlays too.
     [Arguments]    ${expected_text}
     Wait Until Element Is Visible    xpath=//*[contains(@class, 'auras__html-container') and contains(., '${expected_text}')]    15s
+
+Get Augmentation Content Count
+    [Documentation]    Return the number of rendered content overlays (text, image, audio, etc.) in the currently open augmentation's canvas, via the same "auras__html-container" wrapper class confirmed to hold rendered overlay content (see "Augmentation Should Contain Text" and "Check if Layer has content"). UNVERIFIED for image/audio specifically - confirmed so far only for text overlays and for images inside Information Layers activities (a different activity type). Use this to assert content accumulates as expected (e.g. count goes 0 -> 1 -> 2 as items are added) when there is no meaningful text value to match on, like for image or audio overlays.
+    ${elements}=    Get WebElements    xpath=//*[contains(@class, 'auras__html-container')]
+    ${count}=    Get Length    ${elements}
+    RETURN    ${count}
 
 Add Text To Augmentation
     [Documentation]    Add a text overlay to the currently open augmentation, using the provided text content. Set ${click_next}=${False} when reopening an already-published activity via "Reopen Activity Editor" - there is no further wizard step to advance to there, so close the editor explicitly afterwards (e.g. with "Click home button") instead.
@@ -158,14 +164,16 @@ Add Text To Augmentation
     Sleep    2s
 
 Add Image To Augmentation
-    [Documentation]    Add an image overlay to the currently open augmentation, using the provided image file.
-    [Arguments]    ${file_path}=${EXECDIR}/assets/annoter.png
+    [Documentation]    Add an image overlay to the currently open augmentation, using the provided image file. Set ${click_next}=${False} to add more content afterward in the same session before finalizing - e.g. adding an image and then audio to the same activity, since the wizard's "Next" finishes the whole canvas step, not just this one item.
+    [Arguments]    ${file_path}=${EXECDIR}/assets/annoter.png    ${click_next}=${True}
     Wait Until Element Is Visible    xpath=//button[@title='Image']    15s
     Click Element    xpath=//button[@title='Image']
     Wait Until Element Is Visible    xpath=//h5[contains(text(), 'Click to edit...')]    15s
     Click Element    xpath=//h5[contains(text(), 'Click to edit...')]
     Choose File    xpath=//input[@type='file']    ${file_path}
-    Next button
+    IF    ${click_next}
+        Next button
+    END
 
 Add Video To Augmentation
     [Documentation]    Add a video overlay to the currently open augmentation, using the provided video file.
