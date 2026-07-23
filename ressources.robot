@@ -701,9 +701,9 @@ Find And Open Activity Menu And Edit
     Open Activity Menu And Edit    ${activity_title}
 
 Reopen Activity Editor
-    [Documentation]    Reopen an existing activity identified by its title (via its card menu's "Edit" action) and step through the metadata pages to reach the augmentation canvas, ready to add more content with keywords like "Add Text To Augmentation". Verified live: unlike the single combined page used during initial creation, the reopened editor paginates title/instructions/description across separate "Next" clicks before reaching the "#three-canvas" board - if the app changes that step count this is the first place to check.
+    [Documentation]    Reopen an existing activity identified by its title (via its card menu's "Edit" action) and step through the metadata pages to reach the augmentation canvas, ready to add more content with keywords like "Add Text To Augmentation". Verified live: unlike the single combined page used during initial creation, the reopened editor paginates title/instructions/description across separate "Next" clicks before reaching the "#three-canvas" board - if the app changes that step count this is the first place to check. The retry window is generous (12x15s = up to 3 minutes) since a heavier upload (e.g. video) can take noticeably longer to finish processing server-side before its card shows up on a fresh reload than a small text/image overlay does - confirmed live on 061_offline_video_after_online_creation.robot, where 8x15s (2 minutes) was not always enough.
     [Arguments]    ${activity_title}
-    Wait Until Keyword Succeeds    8x    15s    Find And Open Activity Menu And Edit    ${activity_title}
+    Wait Until Keyword Succeeds    12x    15s    Find And Open Activity Menu And Edit    ${activity_title}
     Sleep    2s
     Next button
     Sleep    2s

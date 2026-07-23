@@ -32,6 +32,7 @@ Create activity with image while online
     Sleep    2s
     Validation button
     Add Image To Augmentation
+    Sleep    2s
     Wait For Detection Or Log Miss
     Click home button
     Sleep    5s
