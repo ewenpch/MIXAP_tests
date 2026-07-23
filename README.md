@@ -357,3 +357,15 @@ The image counterpart to 058_offline_text_edit_after_online_creation.robot. Crea
 
 ## 060_offline_audio_after_online_creation.robot
 The audio counterpart to 058_offline_text_edit_after_online_creation.robot. Creates an activity with an uploaded audio overlay (via the same tool selectors as 041_audio_tool.robot) while online, then reopens the activity - while still online, for the same page-reload-needs-connectivity reason as 058 - and only then goes offline, confirming the audio overlay's rendered count is 1 via "Get Augmentation Content Count".
+
+## 061_offline_video_after_online_creation.robot
+The video counterpart to 058_offline_text_edit_after_online_creation.robot, following the same pattern as 059/060: creates an activity with a video overlay online, reopens it while still online, goes offline, then confirms the rendered overlay count is 1 via "Get Augmentation Content Count".
+
+## 062_offline_sticker_after_online_creation.robot
+The sticker counterpart to 058_offline_text_edit_after_online_creation.robot, following the same pattern as 059/060: creates an activity with a stock sticker overlay online, reopens it while still online, goes offline, then confirms the rendered overlay count is 1 via "Get Augmentation Content Count".
+
+## 063_offline_3d_object_after_online_creation.robot
+The 3D object counterpart to 058_offline_text_edit_after_online_creation.robot, following the same pattern as 059/060: creates an activity with a 3D object overlay (.fbx upload) online, reopens it while still online, goes offline, then confirms the rendered overlay count is 1 via "Get Augmentation Content Count".
+
+## 064_offline_link_after_online_creation.robot
+The link counterpart to 058_offline_text_edit_after_online_creation.robot, following the same pattern as 059/060: creates an activity with a link overlay online, reopens it while still online, goes offline, then confirms the rendered overlay count is 1 via "Get Augmentation Content Count".
