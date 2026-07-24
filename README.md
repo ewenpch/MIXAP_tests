@@ -149,7 +149,7 @@ This test suite evaluates the local fallback capacity of the interactive **Audio
 ## 011_create_sheet_augmentation.robot
 This test suite evaluates placing a textual notepad block (**Note / Sheet**) onto an environment target while working online.
 * **Create Activity & Target Setup**: Follows standard sequences to initialize an **Augmented activity** template and register a visual target anchor frame.
-* **Add sheet to the augmentation**: Interacts with the overlay toolbar to select the "Note" tool component. Note: Inline text typing within this note element currently contains placeholder comment structures (`#TODO edit the sheet, unclickable`) awaiting finalized implementation paths.
+* **Add sheet to the augmentation**: Interacts with the overlay toolbar to select the "Note" tool component, then clicks the rendered overlay itself (not the toolbar panel) to open its Tiptap/ProseMirror rich-text editor and replaces the default placeholder content with actual text.
 * **Display augmentation**: Ensures that placing an empty note anchor container successfully passes execution pipelines.
 
 ## 011_create_sheet_augmentation_offline.robot

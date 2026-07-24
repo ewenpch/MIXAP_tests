@@ -205,12 +205,18 @@ Add Audio To Augmentation
     Next button
 
 Add Sheet To Augmentation
-    [Documentation]    Add an empty note/sheet overlay to the currently open augmentation. Editing its text is not currently automatable (see comment below), so this only covers placing the empty note.
+    [Documentation]    Add a note/sheet overlay to the currently open augmentation, then edit its text. The "Note" tool's own panel only places an empty placeholder - the real editor doesn't open from there (this was the previous TODO: searching for an id-addressable edit target found nothing, because there isn't one). Confirmed live: clicking directly on the rendered overlay (the "auras__html-container" wrapper, same one used by "Get Augmentation Content Count") is what opens it, as a Tiptap/ProseMirror rich-text drawer prefilled with a default "Edit your content" heading. "Input Text" fully replaces that default content (SeleniumLibrary's clear() works fine on this contenteditable, confirmed live - no need for manual select-all/backspace). Confirmed the typed text persists across a reopen.
+    [Arguments]    ${text}=ma note par défaut
     Wait Until Element Is Visible    xpath=//button[@title='Note']    15s
     Click Element    xpath=//button[@title='Note']
     Sleep    2
+    Click Element    xpath=(//*[contains(@class, 'auras__html-container')])[last()]
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'tiptap ProseMirror')]    15s
+    Click Element    xpath=//div[contains(@class, 'tiptap ProseMirror')]
+    Input Text    xpath=//div[contains(@class, 'tiptap ProseMirror')]    ${text}
+    Click Element    xpath=//button[contains(@class, 'ant-drawer-close')]
+    Sleep    1s
     Next button
-    # TODO edit the sheet, unclickable, tried with ids but unable to find which part of the code enables its behavior
 
 Add 3D Object To Augmentation
     [Documentation]    Add a 3D object overlay to the currently open augmentation, using the provided model file. Set ${click_next}=${False} to upload without advancing, e.g. when uploading several formats in a row and only the last one should proceed.
