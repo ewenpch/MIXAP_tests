@@ -369,3 +369,6 @@ The 3D object counterpart to 058_offline_text_edit_after_online_creation.robot, 
 
 ## 064_offline_link_after_online_creation.robot
 The link counterpart to 058_offline_text_edit_after_online_creation.robot, following the same pattern as 059/060: creates an activity with a link overlay online, reopens it while still online, goes offline, then confirms the rendered overlay count is 1 via "Get Augmentation Content Count".
+
+## 065_offline_sheet_after_online_creation.robot
+The note/sheet counterpart to 058_offline_text_edit_after_online_creation.robot, made possible once "Add Sheet To Augmentation" gained real text-editing support (see its docstring in ressources.robot). Unlike 059-064 which only check a rendered overlay count, this one - like 058 - verifies actual text content: creates an activity with a note overlay online, reopens it while still online, goes offline, clicks the rendered overlay to open its editor and confirms the text is still there, then edits it again while offline and confirms the new text took.
