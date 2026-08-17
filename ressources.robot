@@ -139,6 +139,17 @@ Wait For Detection Or Log Miss
     ${status}    ${message}=    Run Keyword And Ignore Error    Wait for detection
     Run Keyword If    '${status}' == 'FAIL'    Log    ⚠️ Expected behavior: The element is still visible after 25s miss detection.    WARN
 
+Augmentation Should Contain Text
+    [Documentation]    Assert that the given text is rendered as an overlay within the currently open augmentation's canvas. Checks rendered DOM presence rather than reopening the text tool's editor to read it back, since clicking the "Text" toolbar button always adds a brand new text overlay instead of reselecting an existing one - there is no known way to reopen an existing text element for editing. Confirmed live (058_offline_text_edit_after_online_creation.robot): the "auras__html-container" class - already used for canvas-overlaid content in Information Layers activities, see "Check if Layer has content" - is shared by Augmented activities' text overlays too.
+    [Arguments]    ${expected_text}
+    Wait Until Element Is Visible    xpath=//*[contains(@class, 'auras__html-container') and contains(., '${expected_text}')]    15s
+
+Get Augmentation Content Count
+    [Documentation]    Return the number of rendered content overlays (text, image, audio, etc.) in the currently open augmentation's canvas, via the same "auras__html-container" wrapper class confirmed to hold rendered overlay content (see "Augmentation Should Contain Text" and "Check if Layer has content"). UNVERIFIED for image/audio specifically - confirmed so far only for text overlays and for images inside Information Layers activities (a different activity type). Use this to assert content accumulates as expected (e.g. count goes 0 -> 1 -> 2 as items are added) when there is no meaningful text value to match on, like for image or audio overlays.
+    ${elements}=    Get WebElements    xpath=//*[contains(@class, 'auras__html-container')]
+    ${count}=    Get Length    ${elements}
+    RETURN    ${count}
+
 Add Text To Augmentation
     [Documentation]    Add a text overlay to the currently open augmentation, using the provided text content. Set ${click_next}=${False} when reopening an already-published activity via "Reopen Activity Editor" - there is no further wizard step to advance to there, so close the editor explicitly afterwards (e.g. with "Click home button") instead.
     [Arguments]    ${text}=mon texte par défaut    ${click_next}=${True}
@@ -153,14 +164,16 @@ Add Text To Augmentation
     Sleep    2s
 
 Add Image To Augmentation
-    [Documentation]    Add an image overlay to the currently open augmentation, using the provided image file.
-    [Arguments]    ${file_path}=${EXECDIR}/assets/annoter.png
+    [Documentation]    Add an image overlay to the currently open augmentation, using the provided image file. Set ${click_next}=${False} to add more content afterward in the same session before finalizing - e.g. adding an image and then audio to the same activity, since the wizard's "Next" finishes the whole canvas step, not just this one item.
+    [Arguments]    ${file_path}=${EXECDIR}/assets/annoter.png    ${click_next}=${True}
     Wait Until Element Is Visible    xpath=//button[@title='Image']    15s
     Click Element    xpath=//button[@title='Image']
     Wait Until Element Is Visible    xpath=//h5[contains(text(), 'Click to edit...')]    15s
     Click Element    xpath=//h5[contains(text(), 'Click to edit...')]
     Choose File    xpath=//input[@type='file']    ${file_path}
-    Next button
+    IF    ${click_next}
+        Next button
+    END
 
 Add Video To Augmentation
     [Documentation]    Add a video overlay to the currently open augmentation, using the provided video file.
@@ -192,12 +205,18 @@ Add Audio To Augmentation
     Next button
 
 Add Sheet To Augmentation
-    [Documentation]    Add an empty note/sheet overlay to the currently open augmentation. Editing its text is not currently automatable (see comment below), so this only covers placing the empty note.
+    [Documentation]    Add a note/sheet overlay to the currently open augmentation, then edit its text. The "Note" tool's own panel only places an empty placeholder - the real editor doesn't open from there (this was the previous TODO: searching for an id-addressable edit target found nothing, because there isn't one). Confirmed live: clicking directly on the rendered overlay (the "auras__html-container" wrapper, same one used by "Get Augmentation Content Count") is what opens it, as a Tiptap/ProseMirror rich-text drawer prefilled with a default "Edit your content" heading. "Input Text" fully replaces that default content (SeleniumLibrary's clear() works fine on this contenteditable, confirmed live - no need for manual select-all/backspace). Confirmed the typed text persists across a reopen.
+    [Arguments]    ${text}=ma note par défaut
     Wait Until Element Is Visible    xpath=//button[@title='Note']    15s
     Click Element    xpath=//button[@title='Note']
     Sleep    2
+    Click Element    xpath=(//*[contains(@class, 'auras__html-container')])[last()]
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'tiptap ProseMirror')]    15s
+    Click Element    xpath=//div[contains(@class, 'tiptap ProseMirror')]
+    Input Text    xpath=//div[contains(@class, 'tiptap ProseMirror')]    ${text}
+    Click Element    xpath=//button[contains(@class, 'ant-drawer-close')]
+    Sleep    1s
     Next button
-    # TODO edit the sheet, unclickable, tried with ids but unable to find which part of the code enables its behavior
 
 Add 3D Object To Augmentation
     [Documentation]    Add a 3D object overlay to the currently open augmentation, using the provided model file. Set ${click_next}=${False} to upload without advancing, e.g. when uploading several formats in a row and only the last one should proceed.
@@ -599,16 +618,22 @@ Synchronize Activity
     Sleep    5s
     Wait Until Element Is Visible    ${uploaded_button}    15s
 
-Generate Share Code
-    [Documentation]    Synchronize an activity/path, open its sharing panel and return the read-only share code. Pass ${activity_title} to check the card exists and scope the sync to it specifically when more than one card could be on screen. Verified live: the "Read-only" tab is active by default and already displays a "<code>" element with the share code - no "generate"/confirm click needed (that button belongs to the inactive "Template" tab, which is why waiting on it used to time out).
-    [Arguments]    ${activity_title}=${EMPTY}
-    Synchronize Activity    ${activity_title}
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]    15s
-    Click Element    xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]
+Get Share Code From Sync Modal
+    [Documentation]    From an already-open Cloud Sync Status modal: click the given "generate" button locator, confirm the resulting irreversible-action warning dialog, then read and return the "<code>" element that appears. Shared tail of "Generate Share Code", "Generate Share Code With Id" and "Generate Template Share Code" - only the "generate" button itself differs between the "Read-only" tab (default) and the "Template" tab, everything after it is identical.
+    [Arguments]    ${generate_button_locator}=xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]
+    Wait Until Element Is Visible    ${generate_button_locator}    15s
+    Click Element    ${generate_button_locator}
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'ant-btn-dangerous')]    15s
     Click Element    xpath=//button[contains(@class, 'ant-btn-dangerous')]
     Wait Until Element Is Visible    xpath=//code    30s
     ${code}=    Get Text    xpath=//code
+    RETURN    ${code}
+
+Generate Share Code
+    [Documentation]    Synchronize an activity/path, open its sharing panel and return the read-only share code (shown on the default "Read-only" tab). Pass ${activity_title} to check the card exists and scope the sync to it specifically when more than one card could be on screen.
+    [Arguments]    ${activity_title}=${EMPTY}
+    Synchronize Activity    ${activity_title}
+    ${code}=    Get Share Code From Sync Modal
     RETURN    ${code}
 
 Generate Share Code With Id
@@ -621,12 +646,7 @@ Generate Share Code With Id
     Click Element    ${sync_button}
     Sleep    5s
     Wait Until Element Is Visible    ${uploaded_button}    15s
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]    15s
-    Click Element    xpath=//button[contains(@class, 'cloud-sync-status-modal__sharing-generate-button')]
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'ant-btn-dangerous')]    15s
-    Click Element    xpath=//button[contains(@class, 'ant-btn-dangerous')]
-    Wait Until Element Is Visible    xpath=//code    30s
-    ${code}=    Get Text    xpath=//code
+    ${code}=    Get Share Code From Sync Modal
     RETURN    ${code}
 
 Generate Template Share Code
@@ -635,12 +655,7 @@ Generate Template Share Code
     Synchronize Activity    ${activity_title}
     Wait Until Element Is Visible    xpath=//div[contains(@class,'ant-tabs-tab') and .//text()='Template']    15s
     Click Element    xpath=//div[contains(@class,'ant-tabs-tab') and .//text()='Template']
-    Wait Until Element Is Visible    xpath=//button[contains(., 'Generate Template Code')]    15s
-    Click Element    xpath=//button[contains(., 'Generate Template Code')]
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'ant-btn-dangerous')]    15s
-    Click Element    xpath=//button[contains(@class, 'ant-btn-dangerous')]
-    Wait Until Element Is Visible    xpath=//code    30s
-    ${code}=    Get Text    xpath=//code
+    ${code}=    Get Share Code From Sync Modal    xpath=//button[contains(., 'Generate Template Code')]
     RETURN    ${code}
 
 Import Activity
@@ -692,9 +707,9 @@ Find And Open Activity Menu And Edit
     Open Activity Menu And Edit    ${activity_title}
 
 Reopen Activity Editor
-    [Documentation]    Reopen an existing activity identified by its title (via its card menu's "Edit" action) and step through the metadata pages to reach the augmentation canvas, ready to add more content with keywords like "Add Text To Augmentation". Verified live: unlike the single combined page used during initial creation, the reopened editor paginates title/instructions/description across separate "Next" clicks before reaching the "#three-canvas" board - if the app changes that step count this is the first place to check.
+    [Documentation]    Reopen an existing activity identified by its title (via its card menu's "Edit" action) and step through the metadata pages to reach the augmentation canvas, ready to add more content with keywords like "Add Text To Augmentation". Verified live: unlike the single combined page used during initial creation, the reopened editor paginates title/instructions/description across separate "Next" clicks before reaching the "#three-canvas" board - if the app changes that step count this is the first place to check. The retry window is generous (12x15s = up to 3 minutes) since a heavier upload (e.g. video) can take noticeably longer to finish processing server-side before its card shows up on a fresh reload than a small text/image overlay does - confirmed live on 061_offline_video_after_online_creation.robot, where 8x15s (2 minutes) was not always enough.
     [Arguments]    ${activity_title}
-    Wait Until Keyword Succeeds    8x    15s    Find And Open Activity Menu And Edit    ${activity_title}
+    Wait Until Keyword Succeeds    12x    15s    Find And Open Activity Menu And Edit    ${activity_title}
     Sleep    2s
     Next button
     Sleep    2s
@@ -995,7 +1010,6 @@ Filter by tag
     Wait Until Element Is Visible    xpath=//div[contains(@class, 'labels-panel__chip labels-panel__chip--clickable')]//span[text()='${tag_name}']    5s
     Click Element     xpath=//div[contains(@class, 'labels-panel__chip labels-panel__chip--clickable')]//span[text()='${tag_name}']
     Click Element    xpath=//button[contains(@class, 'labels-panel__close')]
-    Sleep    45s
 
 Get Activity Number
     [Documentation]    Returns the number of activity/path cards present in the HOME menu.
