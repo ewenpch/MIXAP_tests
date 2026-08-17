@@ -5,7 +5,6 @@ Library    String
 Resource       ./ressources.robot
 
 *** Variables ***
-${sharecode}    None
 ${run_suffix}    value
 
 *** Test Cases ***
@@ -23,6 +22,8 @@ Create activity and share as first account
     Create empty augmented activity    empty activity ${run_suffix}
     Go Online
     Sleep    2s
+    Synchronize Activity    empty activity ${run_suffix}
+    Click Element    xpath=//button[contains(@class, 'cloud-sync-status-modal__close')]
     Sign Out
     Close Browser
 
