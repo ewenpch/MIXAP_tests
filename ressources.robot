@@ -978,6 +978,29 @@ Play Activity
     Wait Until Element Is Visible    ${play_button}    15s
     Click Element    ${play_button}
 
+Play Path
+    [Documentation]    Paths and activities share the same title-arrow-button launch control, so this just delegates to "Play Activity".
+    [Arguments]    ${path_title}
+    Play Activity    ${path_title}
+
+Go To Next Activity In Path Player
+    [Documentation]    Click the AR player's "next" control to advance to the next activity in a multi-activity path (e.g. a Guided Path). Verified live: this navigates immediately regardless of whether the current activity's target has actually been detected yet - it is not gated on detection, only disabled on the path's last activity. The player toolbar has 4 buttons in DOM order (home, previous, next, list-overview); this is the 2nd of the 2 non-circular ones.
+    Click Element    xpath=(//button[contains(@class, 'auraplay__control-btn') and not(contains(@class, 'auraplay__control-btn--circle'))])[2]
+    Sleep    2s
+
+Go To Previous Activity In Path Player
+    [Documentation]    Click the AR player's "previous" control to go back to the previous activity in a multi-activity path. Disabled (and so a no-op) on the path's first activity.
+    Click Element    xpath=(//button[contains(@class, 'auraplay__control-btn') and not(contains(@class, 'auraplay__control-btn--circle'))])[1]
+    Sleep    2s
+
+Path Player Previous Button Should Be Disabled
+    [Documentation]    Assert the AR player's "previous" control is disabled - true when the currently displayed activity is the first one in the path.
+    Element Should Be Disabled    xpath=(//button[contains(@class, 'auraplay__control-btn') and not(contains(@class, 'auraplay__control-btn--circle'))])[1]
+
+Path Player Previous Button Should Be Enabled
+    [Documentation]    Assert the AR player's "previous" control is enabled - true whenever the currently displayed activity is not the first one in the path.
+    Element Should Be Enabled    xpath=(//button[contains(@class, 'auraplay__control-btn') and not(contains(@class, 'auraplay__control-btn--circle'))])[1]
+
 Resync Activity
     [Documentation]    Click an activity/path card's sync button after it has already been synced once, confirm the resync in the cloud sync status modal, and wait for the upload to complete again.
     [Arguments]    ${activity_title}=${EMPTY}

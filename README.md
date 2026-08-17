@@ -372,3 +372,6 @@ The link counterpart to 058_offline_text_edit_after_online_creation.robot, follo
 
 ## 065_offline_sheet_after_online_creation.robot
 The note/sheet counterpart to 058_offline_text_edit_after_online_creation.robot, made possible once "Add Sheet To Augmentation" gained real text-editing support (see its docstring in ressources.robot). Unlike 059-064 which only check a rendered overlay count, this one - like 058 - verifies actual text content: creates an activity with a note overlay online, reopens it while still online, goes offline, clicks the rendered overlay to open its editor and confirms the text is still there, then edits it again while offline and confirms the new text took.
+
+## 066_guided_path_navigation.robot
+Validates the AR player's step navigation for a Guided Path. Creates two activities and adds both to a Guided Path in order, then launches the path directly (via "Play Path") and asserts the player's "previous" control starts disabled on the first activity, becomes enabled after clicking "next" to advance to the second, and is disabled again after clicking "previous" back to the first. Verified live: navigating with "next"/"previous" is not gated on the current activity's target actually being detected - the buttons are only disabled at the path's start/end boundaries, not on detection state.
