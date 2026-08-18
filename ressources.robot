@@ -306,14 +306,25 @@ Click home button
     Execute JavaScript    document.querySelector("button.editor__close-button").click();
 
 Add Tag to Activity
-    [Documentation]    Add a tag to the activity using the provided tag name
+    [Documentation]    Add a tag to the activity using the provided tag name. Call this once per tag to attach more than one - verified live, it correctly handles: (1) the first tag on an activity (the trigger is an empty-state "editor__tags-chip" button) vs. any additional tag (once at least one tag exists, that button is replaced entirely by an "editor__activity-tag" chip showing the existing tag(s) - clicking it reopens the same "Tag your activity" panel with the same "Add label" option); and (2) a tag NAME that already exists as a label elsewhere in the account (e.g. attached to a different activity earlier in the same session) vs. a genuinely new one - the panel shows already-existing labels as directly clickable "Select tags" chips, and clicking "Add label" then typing/entering a name that matches one of those existing chips does NOT attach it (silently does nothing) - the existing chip must be clicked directly instead. A caller that only ever uses the "Add label" input path will silently fail to attach any tag whose name was already used earlier in the same run.
     [Arguments]    ${tag_name}
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'editor__tags-chip')]    5s
-    Click Element    xpath=//button[contains(@class, 'editor__tags-chip')]
-    Wait Until Element Is Visible    xpath=//button[contains(@aria-label, 'Add label')]
-    Click Element    xpath=//button[contains(@aria-label, 'Add label')]
-    Input Text    xpath=//input[contains(@class, 'labels-panel__add-name-input')]    ${tag_name}
-    Press Keys    xpath=//input[contains(@class, 'labels-panel__add-name-input')]    RETURN
+    ${has_existing_tag}=    Run Keyword And Return Status    Wait Until Element Is Visible    xpath=//button[contains(@class, 'editor__activity-tag')]    2s
+    IF    ${has_existing_tag}
+        Click Element    xpath=(//button[contains(@class, 'editor__activity-tag')])[1]
+    ELSE
+        Wait Until Element Is Visible    xpath=//button[contains(@class, 'editor__tags-chip')]    5s
+        Click Element    xpath=//button[contains(@class, 'editor__tags-chip')]
+    END
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'labels-panel')]    5s
+    ${tag_already_exists}=    Run Keyword And Return Status    Wait Until Element Is Visible    xpath=//div[contains(@class, 'labels-panel__chip labels-panel__chip--clickable')]//span[text()='${tag_name}']    2s
+    IF    ${tag_already_exists}
+        Click Element    xpath=//div[contains(@class, 'labels-panel__chip labels-panel__chip--clickable')]//span[text()='${tag_name}']
+    ELSE
+        Wait Until Element Is Visible    xpath=//button[contains(@aria-label, 'Add label')]
+        Click Element    xpath=//button[contains(@aria-label, 'Add label')]
+        Input Text    xpath=//input[contains(@class, 'labels-panel__add-name-input')]    ${tag_name}
+        Press Keys    xpath=//input[contains(@class, 'labels-panel__add-name-input')]    RETURN
+    END
     Click Element    xpath=//button[contains(@class, 'labels-panel__close')]
 
 Delete Tag from Activity
@@ -559,6 +570,32 @@ Get Missing Activity Ids
         END
     END
     RETURN    ${missing}
+
+Remove Activity From Path By Id
+    [Documentation]    Remove an activity from an already-open path content drawer WITHOUT deleting the activity itself, identified by its "data-id". The real mechanism (non-obvious, confirmed live): click the mini-card's title-wrapper (not the whole card - its bounding-box center overlaps the like/sync action buttons, same pitfall as "Add Activity to Path By Id") to select it, which reveals a floating "N selected / Remove / Clear" action bar at the bottom of the drawer; click its "Remove" button. No confirmation dialog appears. Verified live: the activity is only detached from this path - it still exists as an independent card on the home grid afterwards. Contrast with "Delete Activity From Path Drawer By Id", whose "Delete" menu item instead performs a full, irreversible deletion of the activity everywhere.
+    [Arguments]    ${activity_id}
+    ${mini_card}=    Set Variable    xpath=//div[contains(@class,'path-slider__content')]//*[@data-id='${activity_id}']
+    Wait Until Element Is Visible    ${mini_card}    10s
+    Scroll Element Into View    ${mini_card}
+    Click Element    ${mini_card}//div[contains(@class,'activity-card__title-wrapper')]
+    Wait Until Element Is Visible    xpath=//button[contains(@class,'path-slider__selection-floating-remove')]    5s
+    Click Element    xpath=//button[contains(@class,'path-slider__selection-floating-remove')]
+    Sleep    2s
+
+Delete Activity From Path Drawer By Id
+    [Documentation]    Delete an activity from within an already-open path content drawer, identified by its "data-id". This is a full, irreversible deletion of the activity everywhere (confirmed via its "Are you sure you want to delete this activity? This action cannot be undone." dialog, and the activity disappearing from the home grid afterwards, not just from the path) - the SAME action as "Delete Activity Or Path" on the home grid, just reachable from inside a path. If you want to detach an activity from a path while keeping it, use "Remove Activity From Path By Id" instead. Follows the same Ant Design stale-dropdown-menu pattern as "Delete Activity Or Path": filters ".ant-dropdown-menu-title-content" nodes by visible text and offsetParent, since Ant Design leaves prior dropdown instances mounted-but-hidden.
+    [Arguments]    ${activity_id}
+    ${mini_card}=    Set Variable    xpath=//div[contains(@class,'path-slider__content')]//*[@data-id='${activity_id}']
+    Wait Until Element Is Visible    ${mini_card}    10s
+    Scroll Element Into View    ${mini_card}
+    Wait Until Element Is Visible    ${mini_card}//button[contains(@class,'menu')]    5s
+    Click Element    ${mini_card}//button[contains(@class,'menu')]
+    Sleep    1s
+    ${clicked}=    Execute Javascript    var items=[...document.querySelectorAll('.ant-dropdown-menu-title-content')].filter(function(el){return el.textContent.trim()==='Delete' && el.offsetParent!==null;}); if(items.length===0){return false;} items[0].click(); return true;
+    Should Be True    ${clicked}    Could not find a visible "Delete" menu item on the path drawer mini-card
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'confirmation-dialog__footer')]//button[text()='Delete']    15s
+    Click Element    xpath=//div[contains(@class, 'confirmation-dialog__footer')]//button[text()='Delete']
+    Sleep    2s
 
 Sign In
     [Documentation]    Sign in to the application using the provided email and password. Waits out the "loading-blocker" overlay before returning - the shared test accounts accumulate a lot of activities/paths across repeated runs, and the initial sync after login can take a while, during which the overlay intercepts clicks on anything underneath it (e.g. "New activity").
@@ -978,6 +1015,29 @@ Play Activity
     Wait Until Element Is Visible    ${play_button}    15s
     Click Element    ${play_button}
 
+Play Path
+    [Documentation]    Paths and activities share the same title-arrow-button launch control, so this just delegates to "Play Activity".
+    [Arguments]    ${path_title}
+    Play Activity    ${path_title}
+
+Go To Next Activity In Path Player
+    [Documentation]    Click the AR player's "next" control to advance to the next activity in a multi-activity path (e.g. a Guided Path). Verified live: this navigates immediately regardless of whether the current activity's target has actually been detected yet - it is not gated on detection, only disabled on the path's last activity. The player toolbar has 4 buttons in DOM order (home, previous, next, list-overview); this is the 2nd of the 2 non-circular ones.
+    Click Element    xpath=(//button[contains(@class, 'auraplay__control-btn') and not(contains(@class, 'auraplay__control-btn--circle'))])[2]
+    Sleep    2s
+
+Go To Previous Activity In Path Player
+    [Documentation]    Click the AR player's "previous" control to go back to the previous activity in a multi-activity path. Disabled (and so a no-op) on the path's first activity.
+    Click Element    xpath=(//button[contains(@class, 'auraplay__control-btn') and not(contains(@class, 'auraplay__control-btn--circle'))])[1]
+    Sleep    2s
+
+Path Player Previous Button Should Be Disabled
+    [Documentation]    Assert the AR player's "previous" control is disabled - true when the currently displayed activity is the first one in the path.
+    Element Should Be Disabled    xpath=(//button[contains(@class, 'auraplay__control-btn') and not(contains(@class, 'auraplay__control-btn--circle'))])[1]
+
+Path Player Previous Button Should Be Enabled
+    [Documentation]    Assert the AR player's "previous" control is enabled - true whenever the currently displayed activity is not the first one in the path.
+    Element Should Be Enabled    xpath=(//button[contains(@class, 'auraplay__control-btn') and not(contains(@class, 'auraplay__control-btn--circle'))])[1]
+
 Resync Activity
     [Documentation]    Click an activity/path card's sync button after it has already been synced once, confirm the resync in the cloud sync status modal, and wait for the upload to complete again.
     [Arguments]    ${activity_title}=${EMPTY}
@@ -1003,13 +1063,20 @@ Resync Activity
     Wait Until Element Is Visible    ${uploaded_button}    15s
 
 Filter by tag
-    [Documentation]    Add a tag to the activity using the provided tag name
+    [Documentation]    Toggle the given tag on/off in the home menu's label filter (multiple tags can be selected at once - selecting more than one is a logical OR, showing any activity that carries at least one of the selected tags, not just activities carrying all of them). Verified live: like the Ant Design dropdown menus elsewhere in this app, this panel can leave a stale, hidden previous instance mounted after closing, so a plain xpath text match can hit that stale node instead of the current visible one once the panel has been opened more than once in the same test run - the chip click is filtered by offsetParent!==null to avoid that, same pattern as "Open Activity Menu And Duplicate" / "Delete Activity Or Path".
     [Arguments]    ${tag_name}
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__labels-btn')]    5s
     Click Element    xpath=//button[contains(@class, 'home__labels-btn')]
-    Wait Until Element Is Visible    xpath=//div[contains(@class, 'labels-panel__chip labels-panel__chip--clickable')]//span[text()='${tag_name}']    5s
-    Click Element     xpath=//div[contains(@class, 'labels-panel__chip labels-panel__chip--clickable')]//span[text()='${tag_name}']
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'labels-panel')]    5s
+    Wait Until Keyword Succeeds    5x    1s    Click Visible Tag Chip    ${tag_name}
     Click Element    xpath=//button[contains(@class, 'labels-panel__close')]
+    Sleep    2s
+
+Click Visible Tag Chip
+    [Documentation]    Click the tag chip matching ${tag_name} in whichever labels panel is currently open, filtered to visible (offsetParent!==null) chips only so a stale hidden previous instance is never hit. Retried by "Filter by tag" since the chip can take a moment to render after the panel opens.
+    [Arguments]    ${tag_name}
+    ${clicked}=    Execute Javascript    var items=[...document.querySelectorAll('.labels-panel__chip.labels-panel__chip--clickable')].filter(function(el){return el.textContent.trim()==='${tag_name}' && el.offsetParent!==null;}); if(items.length===0){return false;} items[0].click(); return true;
+    Should Be True    ${clicked}    Could not find a visible tag chip for '${tag_name}'
 
 Get Activity Number
     [Documentation]    Returns the number of activity/path cards present in the HOME menu.
