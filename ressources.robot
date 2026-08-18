@@ -306,14 +306,25 @@ Click home button
     Execute JavaScript    document.querySelector("button.editor__close-button").click();
 
 Add Tag to Activity
-    [Documentation]    Add a tag to the activity using the provided tag name
+    [Documentation]    Add a tag to the activity using the provided tag name. Call this once per tag to attach more than one - verified live, it correctly handles: (1) the first tag on an activity (the trigger is an empty-state "editor__tags-chip" button) vs. any additional tag (once at least one tag exists, that button is replaced entirely by an "editor__activity-tag" chip showing the existing tag(s) - clicking it reopens the same "Tag your activity" panel with the same "Add label" option); and (2) a tag NAME that already exists as a label elsewhere in the account (e.g. attached to a different activity earlier in the same session) vs. a genuinely new one - the panel shows already-existing labels as directly clickable "Select tags" chips, and clicking "Add label" then typing/entering a name that matches one of those existing chips does NOT attach it (silently does nothing) - the existing chip must be clicked directly instead. A caller that only ever uses the "Add label" input path will silently fail to attach any tag whose name was already used earlier in the same run.
     [Arguments]    ${tag_name}
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'editor__tags-chip')]    5s
-    Click Element    xpath=//button[contains(@class, 'editor__tags-chip')]
-    Wait Until Element Is Visible    xpath=//button[contains(@aria-label, 'Add label')]
-    Click Element    xpath=//button[contains(@aria-label, 'Add label')]
-    Input Text    xpath=//input[contains(@class, 'labels-panel__add-name-input')]    ${tag_name}
-    Press Keys    xpath=//input[contains(@class, 'labels-panel__add-name-input')]    RETURN
+    ${has_existing_tag}=    Run Keyword And Return Status    Wait Until Element Is Visible    xpath=//button[contains(@class, 'editor__activity-tag')]    2s
+    IF    ${has_existing_tag}
+        Click Element    xpath=(//button[contains(@class, 'editor__activity-tag')])[1]
+    ELSE
+        Wait Until Element Is Visible    xpath=//button[contains(@class, 'editor__tags-chip')]    5s
+        Click Element    xpath=//button[contains(@class, 'editor__tags-chip')]
+    END
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'labels-panel')]    5s
+    ${tag_already_exists}=    Run Keyword And Return Status    Wait Until Element Is Visible    xpath=//div[contains(@class, 'labels-panel__chip labels-panel__chip--clickable')]//span[text()='${tag_name}']    2s
+    IF    ${tag_already_exists}
+        Click Element    xpath=//div[contains(@class, 'labels-panel__chip labels-panel__chip--clickable')]//span[text()='${tag_name}']
+    ELSE
+        Wait Until Element Is Visible    xpath=//button[contains(@aria-label, 'Add label')]
+        Click Element    xpath=//button[contains(@aria-label, 'Add label')]
+        Input Text    xpath=//input[contains(@class, 'labels-panel__add-name-input')]    ${tag_name}
+        Press Keys    xpath=//input[contains(@class, 'labels-panel__add-name-input')]    RETURN
+    END
     Click Element    xpath=//button[contains(@class, 'labels-panel__close')]
 
 Delete Tag from Activity
@@ -1052,13 +1063,20 @@ Resync Activity
     Wait Until Element Is Visible    ${uploaded_button}    15s
 
 Filter by tag
-    [Documentation]    Add a tag to the activity using the provided tag name
+    [Documentation]    Toggle the given tag on/off in the home menu's label filter (multiple tags can be selected at once - selecting more than one is a logical OR, showing any activity that carries at least one of the selected tags, not just activities carrying all of them). Verified live: like the Ant Design dropdown menus elsewhere in this app, this panel can leave a stale, hidden previous instance mounted after closing, so a plain xpath text match can hit that stale node instead of the current visible one once the panel has been opened more than once in the same test run - the chip click is filtered by offsetParent!==null to avoid that, same pattern as "Open Activity Menu And Duplicate" / "Delete Activity Or Path".
     [Arguments]    ${tag_name}
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__labels-btn')]    5s
     Click Element    xpath=//button[contains(@class, 'home__labels-btn')]
-    Wait Until Element Is Visible    xpath=//div[contains(@class, 'labels-panel__chip labels-panel__chip--clickable')]//span[text()='${tag_name}']    5s
-    Click Element     xpath=//div[contains(@class, 'labels-panel__chip labels-panel__chip--clickable')]//span[text()='${tag_name}']
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'labels-panel')]    5s
+    Wait Until Keyword Succeeds    5x    1s    Click Visible Tag Chip    ${tag_name}
     Click Element    xpath=//button[contains(@class, 'labels-panel__close')]
+    Sleep    2s
+
+Click Visible Tag Chip
+    [Documentation]    Click the tag chip matching ${tag_name} in whichever labels panel is currently open, filtered to visible (offsetParent!==null) chips only so a stale hidden previous instance is never hit. Retried by "Filter by tag" since the chip can take a moment to render after the panel opens.
+    [Arguments]    ${tag_name}
+    ${clicked}=    Execute Javascript    var items=[...document.querySelectorAll('.labels-panel__chip.labels-panel__chip--clickable')].filter(function(el){return el.textContent.trim()==='${tag_name}' && el.offsetParent!==null;}); if(items.length===0){return false;} items[0].click(); return true;
+    Should Be True    ${clicked}    Could not find a visible tag chip for '${tag_name}'
 
 Get Activity Number
     [Documentation]    Returns the number of activity/path cards present in the HOME menu.

@@ -10,7 +10,7 @@ Create two activities and a path with both added
     Open Web Application without closing
     Maximize Browser Window
     ${username}=    Generate Random String    10    [LETTERS][NUMBERS]
-    Sign Up    ${username}    ${username}@example.com    password123
+    Sign Up    ${username}    test_${username}@example.com    password123
     Create empty augmented activity    activity one
     ${id1}=    Get Card Data Id    activity one
     Set Suite Variable    ${id1}
@@ -50,7 +50,7 @@ Create two activities and a path with both added - Slow 3G
     Set Network Speed
     Maximize Browser Window
     ${username}=    Generate Random String    10    [LETTERS][NUMBERS]
-    Sign Up    ${username}    ${username}@example.com    password123
+    Sign Up    ${username}    test_${username}@example.com    password123
     Create empty augmented activity    activity one
     ${id1}=    Get Card Data Id    activity one
     Set Suite Variable    ${id1}
