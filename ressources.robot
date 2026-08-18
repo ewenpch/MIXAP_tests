@@ -560,6 +560,32 @@ Get Missing Activity Ids
     END
     RETURN    ${missing}
 
+Remove Activity From Path By Id
+    [Documentation]    Remove an activity from an already-open path content drawer WITHOUT deleting the activity itself, identified by its "data-id". The real mechanism (non-obvious, confirmed live): click the mini-card's title-wrapper (not the whole card - its bounding-box center overlaps the like/sync action buttons, same pitfall as "Add Activity to Path By Id") to select it, which reveals a floating "N selected / Remove / Clear" action bar at the bottom of the drawer; click its "Remove" button. No confirmation dialog appears. Verified live: the activity is only detached from this path - it still exists as an independent card on the home grid afterwards. Contrast with "Delete Activity From Path Drawer By Id", whose "Delete" menu item instead performs a full, irreversible deletion of the activity everywhere.
+    [Arguments]    ${activity_id}
+    ${mini_card}=    Set Variable    xpath=//div[contains(@class,'path-slider__content')]//*[@data-id='${activity_id}']
+    Wait Until Element Is Visible    ${mini_card}    10s
+    Scroll Element Into View    ${mini_card}
+    Click Element    ${mini_card}//div[contains(@class,'activity-card__title-wrapper')]
+    Wait Until Element Is Visible    xpath=//button[contains(@class,'path-slider__selection-floating-remove')]    5s
+    Click Element    xpath=//button[contains(@class,'path-slider__selection-floating-remove')]
+    Sleep    2s
+
+Delete Activity From Path Drawer By Id
+    [Documentation]    Delete an activity from within an already-open path content drawer, identified by its "data-id". This is a full, irreversible deletion of the activity everywhere (confirmed via its "Are you sure you want to delete this activity? This action cannot be undone." dialog, and the activity disappearing from the home grid afterwards, not just from the path) - the SAME action as "Delete Activity Or Path" on the home grid, just reachable from inside a path. If you want to detach an activity from a path while keeping it, use "Remove Activity From Path By Id" instead. Follows the same Ant Design stale-dropdown-menu pattern as "Delete Activity Or Path": filters ".ant-dropdown-menu-title-content" nodes by visible text and offsetParent, since Ant Design leaves prior dropdown instances mounted-but-hidden.
+    [Arguments]    ${activity_id}
+    ${mini_card}=    Set Variable    xpath=//div[contains(@class,'path-slider__content')]//*[@data-id='${activity_id}']
+    Wait Until Element Is Visible    ${mini_card}    10s
+    Scroll Element Into View    ${mini_card}
+    Wait Until Element Is Visible    ${mini_card}//button[contains(@class,'menu')]    5s
+    Click Element    ${mini_card}//button[contains(@class,'menu')]
+    Sleep    1s
+    ${clicked}=    Execute Javascript    var items=[...document.querySelectorAll('.ant-dropdown-menu-title-content')].filter(function(el){return el.textContent.trim()==='Delete' && el.offsetParent!==null;}); if(items.length===0){return false;} items[0].click(); return true;
+    Should Be True    ${clicked}    Could not find a visible "Delete" menu item on the path drawer mini-card
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'confirmation-dialog__footer')]//button[text()='Delete']    15s
+    Click Element    xpath=//div[contains(@class, 'confirmation-dialog__footer')]//button[text()='Delete']
+    Sleep    2s
+
 Sign In
     [Documentation]    Sign in to the application using the provided email and password. Waits out the "loading-blocker" overlay before returning - the shared test accounts accumulate a lot of activities/paths across repeated runs, and the initial sync after login can take a while, during which the overlay intercepts clicks on anything underneath it (e.g. "New activity").
     [Arguments]    ${email}    ${password}
