@@ -33,20 +33,24 @@ Import activity as second account
     Sleep    6s
 
 Add text to the activity as first account and resynchronize
-    [Documentation]    Back on account 1: reopen the original activity, add a text overlay to it, close the editor and push the update to the cloud.
+    [Documentation]    Back on account 1: reopen the original activity, add a text overlay to it, close the editor and push the update to the cloud. Account 1's browser is deliberately left open (no "Close Browser") - it gets deleted later, in "Verify the text update did NOT propagate to the template copy", only after account 2 has finished its check. A template import is an independent copy, so this ordering isn't strictly required by the deletion itself the way it is in 043's read-only-import case, but keeping the same deferred-deletion pattern across both files avoids relying on that distinction being complete.
     Switch Browser    compte1
     Reopen Activity Editor    template activity ${run_suffix}
     Add Text To Augmentation    sample text    click_next=${False}
     Click home button
     Resync Activity
+    Close Sync Status Modal
     Sleep    5s
-    Close Browser
 
 Verify the text update did NOT propagate to the template copy
-    [Documentation]    Back on account 2: a template import is an independent copy, not linked to the original. It should NOT show an "updated recently" badge after account 1's resync, unlike a read-only import (see 043_update_propagation_on_import.robot).
+    [Documentation]    Back on account 2: a template import is an independent copy, not linked to the original. It should NOT show an "updated recently" badge after account 1's resync, unlike a read-only import (see 043_update_propagation_on_import.robot). Then cleans up both throwaway accounts: account 2 (current session) first, then account 1 (left open since the previous test case).
     Switch Browser    compte2
     Sleep    5s
     Page Should Not Contain Element    xpath=//div[contains(@class, 'activity-card__status-badge activity-card__status-badge--updated-recent')]
+    Delete Account    password123
+    Close Browser
+    Switch Browser    compte1
+    Delete Account    password123
     Close Browser
 
 Create activity and share as first account - Slow 3G
@@ -75,18 +79,22 @@ Import activity as second account - Slow 3G
     Sleep    6s
 
 Add text to the activity as first account and resynchronize - Slow 3G
-    [Documentation]    Back on account 1: reopen the original activity, add a text overlay to it, close the editor and push the update to the cloud.
+    [Documentation]    Back on account 1: reopen the original activity, add a text overlay to it, close the editor and push the update to the cloud. Account 1's browser is deliberately left open (no "Close Browser") - it gets deleted later, in "Verify the text update did NOT propagate to the template copy - Slow 3G", only after account 2 has finished its check.
     Switch Browser    compte1
     Reopen Activity Editor    template activity ${run_suffix}
     Add Text To Augmentation    sample text    click_next=${False}
     Click home button
     Resync Activity
+    Close Sync Status Modal
     Sleep    5s
-    Close Browser
 
 Verify the text update did NOT propagate to the template copy - Slow 3G
-    [Documentation]    Back on account 2: a template import is an independent copy, not linked to the original. It should NOT show an "updated recently" badge after account 1's resync, unlike a read-only import (see 043_update_propagation_on_import.robot).
+    [Documentation]    Back on account 2: a template import is an independent copy, not linked to the original. It should NOT show an "updated recently" badge after account 1's resync, unlike a read-only import (see 043_update_propagation_on_import.robot). Then cleans up both throwaway accounts: account 2 first, then account 1 (left open since the previous test case).
     Switch Browser    compte2
     Sleep    5s
     Page Should Not Contain Element    xpath=//div[contains(@class, 'activity-card__status-badge activity-card__status-badge--updated-recent')]
+    Delete Account    password123
+    Close Browser
+    Switch Browser    compte1
+    Delete Account    password123
     Close Browser

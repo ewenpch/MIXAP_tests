@@ -18,6 +18,8 @@ Create activity
 
 Synchronize activity
     Synchronize Activity
+    Close Sync Status Modal
+    Delete Account    password123
     Close Browser
 
 Sign in - Slow 3G
@@ -26,7 +28,7 @@ Sign in - Slow 3G
     Set Network Speed
     Maximize Browser Window
     ${username}=    Generate Random String    10    [LETTERS][NUMBERS]
-    Sign Up    ${username}    ${username}@example.com    password123
+    Sign Up    test_${username}    test_${username}@example.com    password123
     Wait Until Element Is Visible    xpath=//button[.//span[text()='test_${username}']]    15s
 
 Create activity - Slow 3G
@@ -34,4 +36,6 @@ Create activity - Slow 3G
 
 Synchronize activity - Slow 3G
     Synchronize Activity
+    Close Sync Status Modal
+    Delete Account    password123
     Close Browser

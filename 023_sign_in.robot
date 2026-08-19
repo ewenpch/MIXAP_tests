@@ -15,6 +15,7 @@ Sign in
     Sign Out
     Sign In    ${username}@example.com    password123
     Wait Until Element Is Visible    xpath=//button[.//span[text()='${username}']]    15s
+    Delete Account    password123
     Close Browser
 
 Sign in - Slow 3G
@@ -28,4 +29,5 @@ Sign in - Slow 3G
     Sign Out
     Sign In    ${username}@example.com    password123
     Wait Until Element Is Visible    xpath=//button[.//span[text()='${username}']]    15s
+    Delete Account    password123
     Close Browser

@@ -13,6 +13,7 @@ Create 8 activities and share path
     [Documentation]    Uses a freshly signed-up, randomly-generated account instead of one of the shared test accounts, so this run doesn't add to their ever-growing history.
     Open Web Application
     ${username1}=    Generate Random String    10    [LETTERS][NUMBERS]
+    Set Suite Variable    ${username1}
     Sign Up    test_${username1}    test_${username1}@example.com    password123
     Sleep    15s
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__new-activity-btn')]    15s
@@ -67,9 +68,16 @@ Import activity with share code
 # app behavior). Closing the browser here would delete the imported path before it can be
 # launched below.
 Launch imported activity
+    [Documentation]    Launches the imported activity, then cleans up both throwaway accounts: account 2 (current session) first, then account 1 - reopened and signed back into specifically because deleting the sharing account any earlier (before account 2 finished importing/launching) would risk invalidating the share code or the imported copy.
     Click Element    xpath=//button[contains(@class, 'activity-card__title-arrow-button')]
     Sleep    2s
     Wait For Detection Or Log Miss
+    Exit Path Player
+    Delete Account    password123
+    Close Browser
+    Open Web Application
+    Sign In    test_${username1}@example.com    password123
+    Delete Account    password123
     Close Browser
 
 Create 8 activities and share path - Slow 3G
@@ -77,6 +85,7 @@ Create 8 activities and share path - Slow 3G
     Open Web Application
     Set Network Speed
     ${username1}=    Generate Random String    10    [LETTERS][NUMBERS]
+    Set Suite Variable    ${username1}
     Sign Up    test_${username1}    test_${username1}@example.com    password123
     Sleep    15s
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'home__new-activity-btn')]    15s
@@ -132,7 +141,14 @@ Import activity with share code - Slow 3G
 # app behavior). Closing the browser here would delete the imported path before it can be
 # launched below.
 Launch imported activity - Slow 3G
+    [Documentation]    Launches the imported activity, then cleans up both throwaway accounts: account 2 (current session) first, then account 1 - reopened and signed back into specifically because deleting the sharing account any earlier (before account 2 finished importing/launching) would risk invalidating the share code or the imported copy.
     Click Element    xpath=//button[contains(@class, 'activity-card__title-arrow-button')]
     Sleep    2s
     Wait For Detection Or Log Miss
+    Exit Path Player
+    Delete Account    password123
+    Close Browser
+    Open Web Application
+    Sign In    test_${username1}@example.com    password123
+    Delete Account    password123
     Close Browser
