@@ -12,6 +12,7 @@ Sign up
     ${username}=    Generate Random String    10    [LETTERS][NUMBERS]
     Sign Up    ${username}    ${username}@example.com    password123
     Wait Until Element Is Visible    xpath=//button[.//span[text()='${username}']]    15s
+    Delete Account    password123
     Close Browser
 
 Sign up - Slow 3G
@@ -22,4 +23,5 @@ Sign up - Slow 3G
     ${username}=    Generate Random String    10    [LETTERS][NUMBERS]
     Sign Up    ${username}    ${username}@example.com    password123
     Wait Until Element Is Visible    xpath=//button[.//span[text()='${username}']]    15s
+    Delete Account    password123
     Close Browser

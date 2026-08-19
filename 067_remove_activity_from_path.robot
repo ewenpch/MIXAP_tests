@@ -42,6 +42,7 @@ Removing one activity from the path leaves only the other
 The removed activity still exists independently on the home grid
     [Documentation]    Confirms the removal was non-destructive: unlike deleting an activity, removing it from a path leaves it fully intact as its own card on the home grid.
     Wait Until Element Is Visible    xpath=//div[contains(@class, 'activity-card') and @data-id='${id1}']    10s
+    Delete Account    password123
     Close Browser
 
 Create two activities and a path with both added - Slow 3G
@@ -79,4 +80,5 @@ Removing one activity from the path leaves only the other - Slow 3G
 
 The removed activity still exists independently on the home grid - Slow 3G
     Wait Until Element Is Visible    xpath=//div[contains(@class, 'activity-card') and @data-id='${id1}']    10s
+    Delete Account    password123
     Close Browser

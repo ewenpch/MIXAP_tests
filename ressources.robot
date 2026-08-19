@@ -552,19 +552,19 @@ Close Path Content Drawer
     Sleep    3s
 
 Path Should Contain Activities
-    [Documentation]    Assert that every activity id in the given list is present in the currently open path content drawer. Call "Open Path Content Drawer" first.
+    [Documentation]    Assert that every activity id in the given list is present in the currently open path content drawer. Call "Open Path Content Drawer" first. Verified live: each mini-card in the drawer carries "data-id" on two nested elements (the "path-slider__masonry-item" wrapper AND the inner "activity-card" div) - matching bare "//*[@data-id=...]" double-counts every card, so this scopes to the inner "activity-card" div only, one match per card.
     [Arguments]    ${activity_ids}
     ${expected_count}=    Get Length    ${activity_ids}
     ${id_conditions}=    Evaluate    " or ".join(["@data-id='%s'" % i for i in $activity_ids])
-    ${actual_count}=    Get Element Count    xpath=//div[contains(@class,'path-slider__content')]//*[${id_conditions}]
+    ${actual_count}=    Get Element Count    xpath=//div[contains(@class,'path-slider__content')]//div[contains(@class,'activity-card') and (${id_conditions})]
     Should Be Equal As Integers    ${actual_count}    ${expected_count}    msg=Expected ${expected_count} activities in the path but found ${actual_count}
 
 Get Missing Activity Ids
-    [Documentation]    Return the subset of the given activity ids that are NOT present in the currently open path content drawer. Call "Open Path Content Drawer" first.
+    [Documentation]    Return the subset of the given activity ids that are NOT present in the currently open path content drawer. Call "Open Path Content Drawer" first. Same double-"data-id" caveat as "Path Should Contain Activities" - scoped to the inner "activity-card" div only.
     [Arguments]    ${activity_ids}
     ${missing}=    Create List
     FOR    ${activity_id}    IN    @{activity_ids}
-        ${found_count}=    Get Element Count    xpath=//div[contains(@class,'path-slider__content')]//*[@data-id='${activity_id}']
+        ${found_count}=    Get Element Count    xpath=//div[contains(@class,'path-slider__content')]//div[contains(@class,'activity-card') and @data-id='${activity_id}']
         IF    ${found_count} == 0
             Append To List    ${missing}    ${activity_id}
         END
@@ -634,6 +634,24 @@ Sign Out
     Click Element    xpath=//button[contains(@class, 'confirmation-dialog__button--danger')]
     Wait Until Element Is Not Visible    xpath=//button[contains(@class, 'confirmation-dialog__button--danger')]    5s
 
+Delete Account
+    [Documentation]    Permanently delete the currently signed-in account, via the header user menu's "Profile" page > "Danger zone" > "Delete account", confirming with the account's own password in the follow-up dialog. Irreversible: deletes the account, profile, and all activities/paths it owns in the cloud. New as of this app update - previously there was no self-service account-deletion feature at all. Use this to clean up a throwaway account created with "Sign Up" instead of leaving it orphaned forever. Verified live: the confirm button starts disabled and only becomes clickable once a password has been typed into the "Current password" field; both the trigger button and the dialog's confirm button share the literal text "Delete account", so the confirm step is scoped to the dialog's own "confirmation-dialog__button--danger" class to avoid ambiguity.
+    [Arguments]    ${password}
+    Wait Until Element Is Visible    xpath=//button[.//span[contains(@class, 'anticon anticon-user')]]    15s
+    Click Element    xpath=//button[.//span[contains(@class, 'anticon anticon-user')]]
+    Wait Until Element Is Visible    xpath=//span[contains(@class, 'ant-dropdown-menu-title-content') and text()='Profile']    5s
+    ${clicked}=    Execute Javascript    var items=[...document.querySelectorAll('.ant-dropdown-menu-title-content')].filter(function(el){return el.textContent.trim()==='Profile' && el.offsetParent!==null;}); if(items.length===0){return false;} items[0].click(); return true;
+    Should Be True    ${clicked}    Could not find a visible "Profile" menu item
+    Wait Until Element Is Visible    xpath=//button[text()='Delete account']    10s
+    Scroll Element Into View    xpath=//button[text()='Delete account']
+    Click Element    xpath=//button[text()='Delete account']
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'confirmation-dialog')]//input[contains(@class, 'profile__input')]    5s
+    Click Element    xpath=//div[contains(@class, 'confirmation-dialog')]//input[contains(@class, 'profile__input')]
+    Input Text    xpath=//div[contains(@class, 'confirmation-dialog')]//input[contains(@class, 'profile__input')]    ${password}
+    Wait Until Element Is Enabled    xpath=//button[contains(@class, 'confirmation-dialog__button--danger')]    5s
+    Click Element    xpath=//button[contains(@class, 'confirmation-dialog__button--danger')]
+    Wait Until Element Is Not Visible    xpath=//button[contains(@class, 'confirmation-dialog__button--danger')]    15s
+
 Open Import Modal
     [Documentation]    Click the import button and verify the import modal actually opened. The click is occasionally swallowed by the app, so this is retried by its caller.
     Click Element    xpath=//button[contains(@class, 'home__import-btn')]
@@ -654,6 +672,12 @@ Synchronize Activity
     Click Element    ${sync_button}
     Sleep    5s
     Wait Until Element Is Visible    ${uploaded_button}    15s
+
+Close Sync Status Modal
+    [Documentation]    Close the Cloud Sync Status modal left open by "Synchronize Activity" / "Resync Activity". Not called automatically by either of those, since several callers (Generate Share Code and friends) keep interacting with the modal after sync completes - call this explicitly once you're done with it, e.g. before a keyword that needs the normal app header uncovered (the modal overlay otherwise intercepts clicks on it).
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'cloud-sync-status-modal__close')]    10s
+    Click Element    xpath=//button[contains(@class, 'cloud-sync-status-modal__close')]
+    Wait Until Element Is Not Visible    xpath=//button[contains(@class, 'cloud-sync-status-modal__close')]    5s
 
 Get Share Code From Sync Modal
     [Documentation]    From an already-open Cloud Sync Status modal: click the given "generate" button locator, confirm the resulting irreversible-action warning dialog, then read and return the "<code>" element that appears. Shared tail of "Generate Share Code", "Generate Share Code With Id" and "Generate Template Share Code" - only the "generate" button itself differs between the "Read-only" tab (default) and the "Template" tab, everything after it is identical.
@@ -1037,6 +1061,16 @@ Path Player Previous Button Should Be Disabled
 Path Player Previous Button Should Be Enabled
     [Documentation]    Assert the AR player's "previous" control is enabled - true whenever the currently displayed activity is not the first one in the path.
     Element Should Be Enabled    xpath=(//button[contains(@class, 'auraplay__control-btn') and not(contains(@class, 'auraplay__control-btn--circle'))])[1]
+
+Exit Path Player
+    [Documentation]    Click the AR player's "home" control to return to the home grid. Needed before calling any keyword that relies on the normal app header (e.g. "Sign Out", "Delete Account") - the player's own minimal header does not include the user avatar menu. Verified live via a full DOM dump of the top-right corner: the visible house icon is a "div.auraplay__home-btn" (role="button", 60x60) - NOT the small 22x22 "button.auraplay__home-btn-close" ("Dismiss"/close-X icon) that overlaps its corner, which is a separate notification-badge-dismiss control and does nothing to the player when clicked (an earlier version of this keyword targeted that wrong element and silently no-opped). Clicks via JS ("offsetParent !== null" filter) since it's a div with a synthetic role, not a native button, and Click Element's native click can be intercepted by the overlapping close-badge button.
+    Wait Until Keyword Succeeds    10x    1s    Click Visible Path Player Home Button
+    Wait Until Element Is Visible    xpath=//button[.//span[contains(@class, 'anticon anticon-user')]]    20s
+
+Click Visible Path Player Home Button
+    [Documentation]    Helper for "Exit Path Player": find and click the currently visible "auraplay__home-btn" control, ignoring any stale hidden copies left mounted from earlier player renders.
+    ${clicked}=    Execute Javascript    var items=[...document.querySelectorAll('.auraplay__home-btn')].filter(function(el){return el.offsetParent!==null;}); if(items.length===0){return false;} items[0].click(); return true;
+    Should Be True    ${clicked}    Could not find a visible "auraplay__home-btn" element
 
 Resync Activity
     [Documentation]    Click an activity/path card's sync button after it has already been synced once, confirm the resync in the cloud sync status modal, and wait for the upload to complete again.

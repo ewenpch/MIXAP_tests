@@ -36,6 +36,8 @@ Going back returns to the first activity
     [Documentation]    Clicking "previous" returns to step 1, where "previous" is disabled again.
     Go To Previous Activity In Path Player
     Path Player Previous Button Should Be Disabled
+    Exit Path Player
+    Delete Account    password123
     Close Browser
 
 Create two activities and a guided path - Slow 3G
@@ -70,4 +72,6 @@ Going back returns to the first activity - Slow 3G
     [Documentation]    Clicking "previous" returns to step 1, where "previous" is disabled again.
     Go To Previous Activity In Path Player
     Path Player Previous Button Should Be Disabled
+    Exit Path Player
+    Delete Account    password123
     Close Browser
