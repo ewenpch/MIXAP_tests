@@ -74,9 +74,9 @@ Create Path
     Wait Until Element Is Visible    xpath=//div[h3[text()='Free Exploration Path']]
 
 Next button
-    [Documentation]    clic sur le bouton suivant en bas a droite de l'application pour passer a l'étape suivante.
-    Wait Until Element Is Visible    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary editor__nav-button editor__nav-button--primary')]   10s
-    Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary editor__nav-button editor__nav-button--primary')]
+    [Documentation]    clic sur le bouton suivant en bas a droite de l'application pour passer a l'étape suivante. Verified live against the app source ("Editor.tsx"): the classes "ant-btn-primary editor__nav-button editor__nav-button--primary" are the real, stable ones - the "css-XXXXXX" hash also present on the element is an Ant Design/emotion runtime style hash that regenerates on every app build/rebuild, so it must never be baked into a xpath "contains()" match (this had gone stale and was breaking the keyword before this fix).
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'ant-btn-primary') and contains(@class, 'editor__nav-button') and contains(@class, 'editor__nav-button--primary')]    10s
+    Click Element    xpath=//button[contains(@class, 'ant-btn-primary') and contains(@class, 'editor__nav-button') and contains(@class, 'editor__nav-button--primary')]
 
 Snap the background
     [Documentation]    take the photo of the background used to display medias on
@@ -119,9 +119,9 @@ Validate the image
     Click Element    xpath=//button[.//span[text()='Save']]
 
 Validation button
-    [Documentation]    click on the validation when rating the background picture
-    Wait Until Element Is Visible        xpath=//button[text()='Next']    30s
-    Click Element    xpath=//button[text()='Next']
+    [Documentation]    click on the validation when rating the background picture. Verified live against the app source ("Board.tsx"): this is the "marker-features" modal's own Next button, scoped via its "marker-features__modal-footer" wrapper - it currently renders the exact same "editor__nav-button editor__nav-button--primary" classes and "Next" text as the main editor footer's regular Next button, so an unscoped match (the previous plain "button[text()='Next']") risks silently matching the wrong one instead of just going stale.
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'marker-features__modal-footer')]//button[contains(@class, 'editor__nav-button--primary')]    30s
+    Click Element    xpath=//div[contains(@class, 'marker-features__modal-footer')]//button[contains(@class, 'editor__nav-button--primary')]
 
 Wait for detection
     [Documentation]    wait for the augementation to be detected using the visibility of instructions
@@ -194,14 +194,12 @@ Add Sticker To Augmentation
     Next button
 
 Add Audio To Augmentation
-    [Documentation]    Add an audio overlay to the currently open augmentation, uploading a local sound file.
+    [Documentation]    Add an audio overlay to the currently open augmentation, uploading a local sound file. Verified live against the app source ("PaletteButtonsBar.tsx" / "AAudio.tsx"): clicking the "Audio" toolbar button no longer opens an upload modal - it now behaves like "Add Sheet To Augmentation"'s Note tool, immediately placing an empty AAudio aura on the canvas whose controls popover (containing the file-upload button) is open by default ("visibleControls" state defaults to true in AAudio.tsx). The underlying "input[type=file]" (rendered by Ant Design's "Upload" component) is intentionally CSS-hidden and never becomes "visible" - confirmed live the popover's visible upload/mic/delete icons render immediately while the input stays hidden - so this waits for it to exist in the DOM ("Wait Until Page Contains Element"), not to become visible, before "Choose File" (which works on hidden file inputs). There is no separate "confirm/validate" step - selecting the file alone updates the aura's content via the form's onChange.
     Wait Until Element Is Visible    xpath=//button[@title='Audio']    15s
     Click Element    xpath=//button[@title='Audio']
-    Wait Until Element Is Visible    xpath=//div[contains(@class, 'css-aj0z9y')]    15s
-    Click Element    xpath=//div[contains(@class, 'css-aj0z9y')]
+    Wait Until Page Contains Element    xpath=//input[@type='file']    15s
     Choose File    xpath=//input[@type='file']    ${EXECDIR}/assets/1645.mp3
-    Wait Until Element Is Visible    xpath=//div[contains(@class, 'css-14q5elh')]    10s
-    Click Element    xpath=//div[contains(@class, 'css-14q5elh')]
+    Sleep    2s
     Next button
 
 Add Sheet To Augmentation
@@ -219,12 +217,11 @@ Add Sheet To Augmentation
     Next button
 
 Add 3D Object To Augmentation
-    [Documentation]    Add a 3D object overlay to the currently open augmentation, using the provided model file. Set ${click_next}=${False} to upload without advancing, e.g. when uploading several formats in a row and only the last one should proceed.
+    [Documentation]    Add a 3D object overlay to the currently open augmentation, using the provided model file. Set ${click_next}=${False} to upload without advancing, e.g. when uploading several formats in a row and only the last one should proceed. Verified live against the app source ("A3d.tsx"): the "Click to edit..." text is just placeholder content shown inside the canvas element - clicking it used to work but now gets intercepted by the aura's own controls popover, which is open by default and already exposes the file-upload input directly, so this goes straight to "Choose File" without clicking the placeholder (same fix as "Add Audio To Augmentation"). That underlying "input[type=file]" is intentionally CSS-hidden by Ant Design's "Upload" component and never becomes "visible", so this waits for it to exist in the DOM rather than to become visible.
     [Arguments]    ${file_path}    ${click_next}=${True}
     Wait Until Element Is Visible    xpath=//button[@title='3D']    15s
     Click Element    xpath=//button[@title='3D']
-    Wait Until Element Is Visible    xpath=//h5[contains(text(), 'Click to edit...')]    15s
-    Click Element    xpath=//h5[contains(text(), 'Click to edit...')]
+    Wait Until Page Contains Element    xpath=//input[@type='file']    15s
     Choose File    xpath=//input[@type='file']    ${file_path}
     Sleep    2
     IF    ${click_next}
@@ -232,19 +229,16 @@ Add 3D Object To Augmentation
     END
 
 Add Link To Augmentation
-    [Documentation]    Add a link overlay to the currently open augmentation, pointing to the provided URL.
+    [Documentation]    Add a link overlay to the currently open augmentation, pointing to the provided URL. Verified live against the app source ("ALink.tsx" / "InputLink.tsx"): clicking the "Link" toolbar button places an ALink aura directly on the canvas (same place-on-canvas pattern as Audio/Note) whose controls popover is open by default - there is no "Click to edit..." placeholder step any more. The popover's first control is a plain icon-only button (no title/aria-label to key off - "(//form[@id='basic']//button)[1]" targets it by its known position, since "InputLink" is always the first item in ALink's options array) which itself opens a NESTED popover containing the real URL input. That input commits via Enter ("onPressEnter" in "InputLink.tsx") - simpler and more robust than locating its icon-only confirm button.
     [Arguments]    ${url}=google.com/
     Wait Until Element Is Visible    xpath=//button[@title='Link']    15s
     Click Element    xpath=//button[@title='Link']
-    Sleep    2
-    Wait Until Element Is Visible    xpath=//h5[contains(text(), 'Click to edit...')]    15s
-    Click Element    xpath=//h5[contains(text(), 'Click to edit...')]
-    Wait Until Element Is Visible    xpath=//form[@id='basic']//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-text ant-btn-lg ant-btn-icon-only')]    15s
-    Click Element    xpath=//form[@id='basic']//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-text ant-btn-lg ant-btn-icon-only')]
-    Wait Until Element Is Visible    //input[@placeholder='Enter URL']    15s
-    Input Text    //input[@placeholder='Enter URL']    ${url}
-    Wait Until Element Is Visible    xpath=//button[.//span[@role='img' and @aria-label='check']]    15s
-    Click Element    xpath=//button[.//span[@role='img' and @aria-label='check']]
+    Sleep    2s
+    Wait Until Element Is Visible    xpath=(//form[@id='basic']//button)[1]    15s
+    Click Element    xpath=(//form[@id='basic']//button)[1]
+    Wait Until Element Is Visible    xpath=//input[@placeholder='Enter URL']    15s
+    Input Text    xpath=//input[@placeholder='Enter URL']    ${url}
+    Press Keys    xpath=//input[@placeholder='Enter URL']    RETURN
     Sleep    1s
     Next button
 
@@ -255,8 +249,8 @@ Add AI Generated Text To Augmentation
     Click Element    xpath=//button[@title='AI']
     Wait Until Element Is Visible    xpath=//button[@aria-label='Text']    15s
     Execute JavaScript    document.querySelector("button.ant-btn-icon-only[aria-label='Text']").click();
-    Wait Until Element Is Visible    xpath=//input[contains(@class, 'ant-input css-j9bb5n ant-input-outlined ds-modal__input') and @placeholder='Ask or describe what to generate…']    5s
-    Input Text    xpath=//input[contains(@class, 'ant-input css-j9bb5n ant-input-outlined ds-modal__input') and @placeholder='Ask or describe what to generate…']    ${prompt}
+    Wait Until Element Is Visible    xpath=//input[contains(@class, 'ds-modal__input') and @placeholder='Ask or describe what to generate…']    5s
+    Input Text    xpath=//input[contains(@class, 'ds-modal__input') and @placeholder='Ask or describe what to generate…']    ${prompt}
     Wait Until Element Is Visible    xpath=//button[@aria-label='Generate preview']    15s
     Click Element    xpath=//button[@aria-label='Generate preview']
     Wait Until Element Is Visible    xpath=//button[.//span[@aria-label='plus']]    15s
@@ -271,8 +265,8 @@ Add AI Generated Image To Augmentation
     Click Element    xpath=//button[@title='AI']
     Wait Until Element Is Visible    xpath=//button[@aria-label='Image']    15s
     Execute JavaScript    document.querySelector("button.ant-btn-icon-only[aria-label='Image']").click();
-    Wait Until Element Is Visible    xpath=//input[contains(@class, 'ant-input css-j9bb5n ant-input-outlined ds-modal__input') and @placeholder='Describe the image…']    5s
-    Input Text    xpath=//input[contains(@class, 'ant-input css-j9bb5n ant-input-outlined ds-modal__input') and @placeholder='Describe the image…']    ${prompt}
+    Wait Until Element Is Visible    xpath=//input[contains(@class, 'ds-modal__input') and @placeholder='Describe the image…']    5s
+    Input Text    xpath=//input[contains(@class, 'ds-modal__input') and @placeholder='Describe the image…']    ${prompt}
     Wait Until Element Is Visible    xpath=//button[@aria-label='Generate preview']    15s
     Click Element    xpath=//button[@aria-label='Generate preview']
     Sleep    2s
@@ -288,8 +282,8 @@ Add AI Generated Audio To Augmentation
     Click Element    xpath=//button[@title='AI']
     Wait Until Element Is Visible    xpath=//button[@aria-label='Audio']    15s
     Execute JavaScript    document.querySelector("button.ant-btn-icon-only[aria-label='Audio']").click();
-    Wait Until Element Is Visible    xpath=//input[contains(@class, 'ant-input css-j9bb5n ant-input-outlined ds-modal__input') and @placeholder='Type the text to speak…']    5s
-    Input Text    xpath=//input[contains(@class, 'ant-input css-j9bb5n ant-input-outlined ds-modal__input') and @placeholder='Type the text to speak…']    ${text}
+    Wait Until Element Is Visible    xpath=//input[contains(@class, 'ds-modal__input') and @placeholder='Type the text to speak…']    5s
+    Input Text    xpath=//input[contains(@class, 'ds-modal__input') and @placeholder='Type the text to speak…']    ${text}
     Wait Until Element Is Visible    xpath=//button[@aria-label='Generate preview']    15s
     Click Element    xpath=//button[@aria-label='Generate preview']
     Sleep    2s
@@ -727,7 +721,7 @@ Import Activity
     Wait Until Keyword Succeeds    3x    3s    Open Import Modal
     Click Element    xpath=//input[@placeholder='Select a share code']
     Input Text    xpath=//input[@placeholder='Select a share code']    ${code}
-    Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary ant-btn-lg ant-btn-block import-modal__button import-modal__button--primary')]
+    Click Element    xpath=//button[contains(@class, 'import-modal__button') and contains(@class, 'import-modal__button--primary')]
 
 Open Activity Menu And Duplicate
     [Documentation]    Click an activity card's menu button and select "Duplicate". Retried by its caller since a freshly created or duplicated card can take a moment to become fully interactive. The "Duplicate" menu item is clicked via JavaScript, filtered to the one that is actually visible, because Ant Design leaves previous dropdown instances mounted (hidden) in the DOM, which makes a plain xpath match the wrong, invisible one once a second dropdown has been opened.
@@ -805,16 +799,21 @@ Restore Activity Or Path
     Click Element    ${restore_button}
 
 Delete Activity Or Path Permanently
-    [Documentation]    Open the Trash and permanently delete the card identified by its "data-id" (as returned by "Delete Activity Or Path"). Scoping the button by data-id keeps this correct even if the trash holds several look-alike deleted cards.
+    [Documentation]    Open the Trash and permanently delete the card identified by its "data-id" (as returned by "Delete Activity Or Path"). Scoping the button by data-id keeps this correct even if the trash holds several look-alike deleted cards. Clicked via JS filtering by "offsetParent !== null" (same stale-node pattern used elsewhere in this file) - confirmed live (offline group) that "Click Element" here can hit "element click intercepted" against another element sharing the exact same class list, i.e. a stale mounted-but-hidden duplicate of this button rather than the currently visible one.
     [Arguments]    ${card_id}
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'ds-header__download-button') and @title='Trash']    15s
     Click Element    xpath=//button[contains(@class, 'ds-header__download-button') and @title='Trash']
     ${card}=    Set Variable    xpath=//div[contains(@class, 'activity-card') and @data-id='${card_id}']
-    ${delete_button}=    Set Variable    ${card}//button[contains(@class, 'activity-card__action-button--delete') and @title='Delete permanently']
-    Wait Until Element Is Visible    ${delete_button}    15s
-    Click Element    ${delete_button}
+    Wait Until Element Is Visible    ${card}//button[contains(@class, 'activity-card__action-button--delete') and @title='Delete permanently']    15s
+    Wait Until Keyword Succeeds    10x    1s    Click Visible Delete Permanently Button    ${card_id}
     Wait Until Element Is Visible    xpath=//div[contains(@class, 'confirmation-dialog__footer')]//button[text()='Delete']    15s
     Click Element    xpath=//div[contains(@class, 'confirmation-dialog__footer')]//button[text()='Delete']
+
+Click Visible Delete Permanently Button
+    [Documentation]    Helper for "Delete Activity Or Path Permanently": find and click the currently visible "Delete permanently" button for the given card id, ignoring any stale hidden duplicate.
+    [Arguments]    ${card_id}
+    ${clicked}=    Execute Javascript    var card=document.querySelector("div.activity-card[data-id='${card_id}']"); if(!card){return false;} var items=[...card.querySelectorAll("button.activity-card__action-button--delete[title='Delete permanently']")].filter(function(el){return el.offsetParent!==null;}); if(items.length===0){return false;} items[0].click(); return true;
+    Should Be True    ${clicked}    Could not find a visible "Delete permanently" button for card ${card_id}
 
 Create basic search and find activity
     [Documentation]    Create a basic search and find activity with a title, instructions, snap the background and validate
@@ -825,7 +824,7 @@ Create basic search and find activity
     Sleep    2s
     Edit Activity Title    ${title}
     Edit Activity Instructions    ${instructions}
-    Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary editor__nav-button editor__nav-button--primary')]
+    Click Element    xpath=//button[contains(@class, 'ant-btn-primary') and contains(@class, 'editor__nav-button') and contains(@class, 'editor__nav-button--primary')]
     Sleep    2s
     Snap the background
     Sleep    2s
@@ -847,7 +846,7 @@ Create failed search and find activity
     Sleep    2s
     Edit Activity Title    ${title}
     Edit Activity Instructions    ${instructions}
-    Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary editor__nav-button editor__nav-button--primary')]
+    Click Element    xpath=//button[contains(@class, 'ant-btn-primary') and contains(@class, 'editor__nav-button') and contains(@class, 'editor__nav-button--primary')]
     Sleep    2s
     Use template image
     Sleep    2s
@@ -871,7 +870,7 @@ Create basic pairs activity
     Sleep    2s
     Edit Activity Title    ${title}
     Edit Activity Instructions    ${instructions}
-    Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary editor__nav-button editor__nav-button--primary')]
+    Click Element    xpath=//button[contains(@class, 'ant-btn-primary') and contains(@class, 'editor__nav-button') and contains(@class, 'editor__nav-button--primary')]
     Sleep    2s
     Wait Until Element Is Visible    xpath=//span[contains(@class, ant-upload-btn)]    15s
     Click Element    xpath=//span[contains(@class, ant-upload-btn)]
@@ -896,7 +895,7 @@ Create basic layers activity
     Sleep    2s
     Edit Activity Title    ${title}
     Edit Activity Instructions    ${instructions}
-    Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary editor__nav-button editor__nav-button--primary')]
+    Click Element    xpath=//button[contains(@class, 'ant-btn-primary') and contains(@class, 'editor__nav-button') and contains(@class, 'editor__nav-button--primary')]
     Sleep    2s
     Snap the background
     Sleep    2s
@@ -918,7 +917,7 @@ Create basic layers activity without validation
     Sleep    2s
     Edit Activity Title    ${title}
     Edit Activity Instructions    ${instructions}
-    Click Element    xpath=//button[contains(@class, 'ant-btn css-j9bb5n ant-btn-primary editor__nav-button editor__nav-button--primary')]
+    Click Element    xpath=//button[contains(@class, 'ant-btn-primary') and contains(@class, 'editor__nav-button') and contains(@class, 'editor__nav-button--primary')]
     Sleep    2s
     Snap the background
     Sleep    2s
