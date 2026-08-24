@@ -40,6 +40,7 @@ Open Web Application
     Open Browser    ${URL}    chrome    options=${CHROME_OPTIONS}
     Title Should Be    MIXAP    timeout 10s
     Wait Until Element Is Visible    xpath=//button[text()='New activity']
+    Suppress All Onboarding Tours
 
 Open Web Application with alias
     [Documentation]    ouvre le site avec le navigateur chrome en suivant les paramètres et avec un alias en paramètres
@@ -48,6 +49,7 @@ Open Web Application with alias
     Open Browser    ${URL}    chrome    options=${CHROME_OPTIONS}    alias=${alias}
     Title Should Be    MIXAP    timeout 10s
     Wait Until Element Is Visible    xpath=//button[text()='New activity']
+    Suppress All Onboarding Tours
 
 Open Web Application without closing
     [Documentation]    ouvre le site avec le navigateur chrome en suivant les paramètres
@@ -55,6 +57,7 @@ Open Web Application without closing
     Open Browser    ${URL}    chrome    options=${CHROME_OPTIONS}
     Title Should Be    MIXAP    timeout 10s
     Wait Until Element Is Visible    xpath=//button[text()='New activity']
+    Suppress All Onboarding Tours
 
 Open Web Application Without Fake Media
     [Documentation]    Open the site with plain Chrome (no fake camera/mic options). Used by tests that only need to confirm the app shell loads and don't drive the camera-dependent activity flows.
@@ -119,8 +122,10 @@ Validate the image
     Click Element    xpath=//button[.//span[text()='Save']]
 
 Validation button
-    [Documentation]    click on the validation when rating the background picture. Verified live against the app source ("Board.tsx"): this is the "marker-features" modal's own Next button, scoped via its "marker-features__modal-footer" wrapper - it currently renders the exact same "editor__nav-button editor__nav-button--primary" classes and "Next" text as the main editor footer's regular Next button, so an unscoped match (the previous plain "button[text()='Next']") risks silently matching the wrong one instead of just going stale.
+    [Documentation]    click on the validation when rating the background picture. Verified live against the app source ("Board.tsx"): this is the "marker-features" modal's own Next button, scoped via its "marker-features__modal-footer" wrapper - it currently renders the exact same "editor__nav-button editor__nav-button--primary" classes and "Next" text as the main editor footer's regular Next button, so an unscoped match (the previous plain "button[text()='Next']") risks silently matching the wrong one instead of just going stale. Also waits for it to be enabled, not just visible: Board.tsx disables it while "compiling" (real marker-image analysis work) - clicking a merely-visible-but-still-disabled button is a silent no-op.
     Wait Until Element Is Visible    xpath=//div[contains(@class, 'marker-features__modal-footer')]//button[contains(@class, 'editor__nav-button--primary')]    30s
+    Wait Until Element Is Enabled    xpath=//div[contains(@class, 'marker-features__modal-footer')]//button[contains(@class, 'editor__nav-button--primary')]    15s
+    Sleep    1s
     Click Element    xpath=//div[contains(@class, 'marker-features__modal-footer')]//button[contains(@class, 'editor__nav-button--primary')]
 
 Wait for detection
@@ -298,6 +303,12 @@ Click home button
     #Click Element    xpath=//button[contains(@class, 'editor__close-button')]
     #Click element using JavaScript to avoid issues with overlapping elements
     Execute JavaScript    document.querySelector("button.editor__close-button").click();
+
+Click home button and discard draft
+    [Documentation]    Click the editor's home/close button, then confirm the "Discard activity?" dialog that appears instead of navigating home directly when leaving an unsaved draft (see Editor.tsx's "handleClose": activities with "meta.isDraft" still set - e.g. a Guided/Auto-Triggered Path/Group not yet carried through to its final "Save" step - trigger this confirmation).
+    Click home button
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'editor__discard-modal-button--danger')]    5s
+    Click Element    xpath=//button[contains(@class, 'editor__discard-modal-button--danger')]
 
 Add Tag to Activity
     [Documentation]    Add a tag to the activity using the provided tag name. Call this once per tag to attach more than one - verified live, it correctly handles: (1) the first tag on an activity (the trigger is an empty-state "editor__tags-chip" button) vs. any additional tag (once at least one tag exists, that button is replaced entirely by an "editor__activity-tag" chip showing the existing tag(s) - clicking it reopens the same "Tag your activity" panel with the same "Add label" option); and (2) a tag NAME that already exists as a label elsewhere in the account (e.g. attached to a different activity earlier in the same session) vs. a genuinely new one - the panel shows already-existing labels as directly clickable "Select tags" chips, and clicking "Add label" then typing/entering a name that matches one of those existing chips does NOT attach it (silently does nothing) - the existing chip must be clicked directly instead. A caller that only ever uses the "Add label" input path will silently fail to attach any tag whose name was already used earlier in the same run.
@@ -862,7 +873,7 @@ Create failed search and find activity
     Sleep    5s
 
 Create basic pairs activity
-    [Documentation]    Create a basic pairs activity with a title, instructions, snap the background and validate
+    [Documentation]    Create a basic pairs activity with a title, instructions, snap the background and validate. Verified live: unlike the marker-compiled activity types (Augmented, Search and Find, Superposition), Pair Association's two images are plain direct uploads with no marker-compilation step - there is no "marker-features" modal here, so the step after both uploads is just the regular editor nav "Next" button ("Next button" keyword), not "Validation button" (which is scoped to that modal and would never appear). Using "Validation button" here previously happened to still work only because its old unscoped "button[text()='Next']" match coincidentally hit the right element - it broke once a driver.js onboarding tour (triggered the first time a fresh account creates a Pair Association activity - see pairAssociationTour.ts) started rendering its own "Next" button with the exact same text, which that bare text-match could no longer disambiguate from.
     [Arguments]    ${title}    ${instructions}
     Create Activity
     Select Activity Type    Pair Association
@@ -881,8 +892,6 @@ Create basic pairs activity
     Sleep    2s
     Next button
     Sleep    2s
-    Validation button
-    Sleep    5s
     Next button
     Sleep    5s
 
@@ -1136,3 +1145,174 @@ Activity Should Appear Before
     [Arguments]    ${first_title}    ${second_title}
     ${is_before}=    Execute Javascript    var titles=[...document.querySelectorAll("h3.activity-card__title")].map(function(el){return el.textContent.trim();}); return titles.indexOf("${first_title}") < titles.indexOf("${second_title}");
     Should Be True    ${is_before}    '${first_title}' should appear before '${second_title}' in the grid
+
+# --- Onboarding tour suppression (called automatically by every "Open Web Application*"
+# keyword above) ---
+# Every driver.js onboarding tour gates on a localStorage "seen/completed" flag (see
+# storage.ts's ONBOARDING_KEYS) that "usePersistentState" (hooks/usePersistentState.ts) reads
+# ONCE at mount, not reactively - so setting these flags only takes effect after a page
+# reload, and must happen BEFORE Sign Up/Create Activity/etc., not after. Left unsuppressed,
+# a fresh account's first visit to Home, or its first time picking a given activity type, can
+# pop a tour popover over the exact UI the test is trying to interact with - confirmed live as
+# the root cause of an "element click intercepted" failure in 037_pairs.robot (the tour's own
+# "Next" button and the real app's "Next" button briefly coexist with identical text). Every
+# other test file benefits from tours being fully suppressed by default; only the
+# 0NN_onboarding_*.robot files call "Reset Onboarding Tour Flag" afterwards to selectively
+# re-enable the one tour they're actually testing.
+
+Suppress All Onboarding Tours
+    [Documentation]    Seed every onboarding tour's "seen/completed" localStorage flag as true and reload, so no driver.js guided tour can trigger for the rest of this browser session. Called automatically by every "Open Web Application*" keyword - only onboarding tests should need to touch this directly (via "Reset Onboarding Tour Flag").
+    Execute Javascript    ['mixap.onboarding.mainSeen','mixap.onboarding.teacherCompleted','mixap.onboarding.studentCompleted','mixap.onboarding.pairAssociationCompleted','mixap.onboarding.searchAndFindCompleted','mixap.onboarding.informationLayerCompleted','mixap.onboarding.autoTriggeredPathCompleted','mixap.onboarding.guidedPathCompleted'].forEach(function(k){localStorage.setItem(k, 'true');});
+    Reload Page
+    Wait Until Element Is Visible    xpath=//button[text()='New activity']    15s
+
+Reset Onboarding Tour Flag
+    [Documentation]    Clear one onboarding tour's "seen/completed" localStorage flag and reload, re-enabling just that tour to trigger again - every other tour stays suppressed (see "Suppress All Onboarding Tours", which every "Open Web Application*" keyword already called before this runs). ${tour_name} is one of: main, teacher, student, pairAssociation, searchAndFind, informationLayer, autoTriggeredPath, guidedPath (see storage.ts's ONBOARDING_KEYS). Call this right after "Open Web Application*" and before "Sign Up".
+    [Arguments]    ${tour_name}
+    ${flags}=    Create Dictionary
+    ...    main=mixap.onboarding.mainSeen
+    ...    teacher=mixap.onboarding.teacherCompleted
+    ...    student=mixap.onboarding.studentCompleted
+    ...    pairAssociation=mixap.onboarding.pairAssociationCompleted
+    ...    searchAndFind=mixap.onboarding.searchAndFindCompleted
+    ...    informationLayer=mixap.onboarding.informationLayerCompleted
+    ...    autoTriggeredPath=mixap.onboarding.autoTriggeredPathCompleted
+    ...    guidedPath=mixap.onboarding.guidedPathCompleted
+    ${key}=    Get From Dictionary    ${flags}    ${tour_name}
+    Execute Javascript    localStorage.removeItem('${key}');
+    Reload Page
+    Wait Until Element Is Visible    xpath=//button[text()='New activity']    15s
+
+# --- Onboarding tours (driver.js-based guided walkthroughs, see src/features/onboarding/) ---
+# Every tour is driven by the same underlying driver.js instance (driverInstance.ts), so the
+# primitives below (popover wait/close/next, role picker, completion-flag check) are shared
+# across all 8 tours (main/teacher/student/pairAssociation/searchAndFind/informationLayer/
+# autoTriggeredPath/guidedPath). Each tour's own step content (verified live against
+# src/features/onboarding/tours/*.ts) chains together EXISTING keywords in this file for its
+# "actionStep"s - clicking the real highlighted element (e.g. "Next button", "Add Text To
+# Augmentation") both performs the real action AND silently advances the tour (see
+# driverInstance.ts's onHighlighted: it attaches its own click listener directly on that
+# element, bypassing any e.stopPropagation() in the app's own handler) - so most tour steps
+# need no dedicated tour-specific keyword at all, only "Click Onboarding Next Button" for the
+# steps that have no single real action (info/freedom steps).
+
+Wait For Onboarding Popover
+    [Documentation]    Wait for a driver.js onboarding tour popover (title/description + Mixy) to be visible. Common entry point for asserting a tour has started or advanced to a new step. Verified live: on an "action" step, the popover can render slightly before driverInstance.ts's "onHighlighted" hook finishes attaching its click listener to the real target element - clicking that element immediately after this keyword returns can race ahead of the listener and perform the real action without ever notifying the tour, leaving it stuck showing the now-stale step. The short settle delay avoids that race.
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'driver-popover')]    15s
+    Sleep    1s
+
+Get Onboarding Popover Description
+    [Documentation]    Return the current onboarding popover's description text.
+    ${text}=    Get Text    xpath=//div[contains(@class, 'driver-popover-description')]
+    RETURN    ${text}
+
+Get Onboarding Popover Progress
+    [Documentation]    Return the current onboarding popover's progress indicator text (e.g. "5 of 10" - rendered because every tour is created with "showProgress: true", see driverInstance.ts). Used to detect that the tour advanced to a new step without clicking "Next" - e.g. a "freedom" step with "advanceOnElementAppear" auto-advances once the real action's DOM signal appears. Prefer this over comparing description text: verified live that consecutive steps can share identical description copy (e.g. pairAssociationTour.ts's two marker-slot steps), which makes a text-equality check an unreliable false negative even when the tour genuinely advanced.
+    ${text}=    Get Text    xpath=//span[contains(@class, 'driver-popover-progress-text')]
+    RETURN    ${text}
+
+Onboarding Popover Should Have Advanced From
+    [Documentation]    Wait until the onboarding popover's progress indicator (see "Get Onboarding Popover Progress") differs from ${previous_progress} - confirms the tour moved to a new step (e.g. via "advanceOnElementAppear" after performing the real action a freedom step asks for), without clicking "Next" manually. Retries briefly since the MutationObserver-based auto-advance (driverInstance.ts) isn't instantaneous.
+    [Arguments]    ${previous_progress}
+    Wait Until Keyword Succeeds    15x    1s    Onboarding Popover Progress Should Not Be    ${previous_progress}
+
+Onboarding Popover Should Have Advanced From Or Click Next
+    [Documentation]    Same intent as "Onboarding Popover Should Have Advanced From" (confirm the tour moved past ${previous_progress}), but falls back to clicking the popover's own Next button if auto-advance doesn't happen within a shorter window. Verified live: "advanceOnElementAppear" can be reliable for one freedom step and inconsistent for the very next one in the same tour (e.g. pairAssociationTour.ts's two consecutive marker-slot steps) - since freedom steps always keep their own Next button available as "a manual fallback" (see pairAssociationTour.ts's own comment), this uses it rather than blocking on a MutationObserver signal that may not be firing for reasons outside this suite's control.
+    [Arguments]    ${previous_progress}
+    ${advanced}=    Run Keyword And Return Status    Wait Until Keyword Succeeds    5x    1s    Onboarding Popover Progress Should Not Be    ${previous_progress}
+    IF    not ${advanced}
+        Click Onboarding Next Button
+    END
+
+Onboarding Popover Progress Should Not Be
+    [Documentation]    Helper for "Onboarding Popover Should Have Advanced From".
+    [Arguments]    ${previous_progress}
+    ${current}=    Get Onboarding Popover Progress
+    Should Not Be Equal    ${current}    ${previous_progress}
+
+Onboarding Tour Should Not Be Active
+    [Documentation]    Assert no onboarding tour popover is currently showing - true once a tour is completed, closed early via its "X" button, or never started.
+    Wait Until Page Does Not Contain Element    xpath=//div[contains(@class, 'driver-popover')]    10s
+
+Click Onboarding Next Button
+    [Documentation]    Click the onboarding popover's own "Next" button, or "Done" on a tour's final step (driver.js renders one or the other, never both - see the shared styling for "driver-popover-next-btn"/"driver-popover-done-btn" in Onboarding.scss). Only valid on info/freedom steps: action steps hide this button entirely (see each tour file's "HIDE_NEXT_BUTTONS" / "actionStep" - the real highlighted element is what advances those instead).
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'driver-popover-next-btn') or contains(@class, 'driver-popover-done-btn')]    15s
+    Click Element    xpath=//button[contains(@class, 'driver-popover-next-btn') or contains(@class, 'driver-popover-done-btn')]
+
+Click Onboarding Previous Button
+    [Documentation]    Click the onboarding popover's own "Previous" button, returning to the prior step.
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'driver-popover-prev-btn')]    15s
+    Click Element    xpath=//button[contains(@class, 'driver-popover-prev-btn')]
+
+Click Onboarding Close Button
+    [Documentation]    Click the onboarding popover's "X" close button, ending the tour early without stepping through the rest of it. Still marks the tour as completed (see OnboardingProvider.tsx's "goTo()": the driver's "onDestroyed" callback fires on any destroy, not only on natural completion) - use "Onboarding Tour Should Be Marked Completed" to confirm that, not as a proxy for "the user actually saw every step".
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'driver-popover-close-btn')]    15s
+    Click Element    xpath=//button[contains(@class, 'driver-popover-close-btn')]
+
+Close Onboarding Tour If Still Active
+    [Documentation]    Fallback cleanup for a tour that should have already completed (e.g. a final action step's real click, like "Click home button", occasionally races ahead of driverInstance.ts's onHighlighted listener attachment and performs the real navigation without notifying the tour - the tour is then left showing a stale popover for a step whose real target no longer exists). If a popover is still showing, clicks its "X" close button (confirmed elsewhere in this file to reliably fire onDestroyed regardless of which step it's called from) rather than leaving the tour orphaned. No-op if the tour already correctly closed on its own - uses a short timeout so that common case doesn't pay a full wait.
+    ${still_active}=    Run Keyword And Return Status    Wait Until Element Is Visible    xpath=//div[contains(@class, 'driver-popover')]    2s
+    IF    ${still_active}
+        Execute Javascript    var el=document.querySelector('.driver-popover-close-btn'); if(el){el.click();}
+    END
+
+Finish Onboarding Tour By Clicking Next
+    [Documentation]    Repeatedly click the onboarding popover's "Next"/"Done" button until the tour closes. Use for a tail run of consecutive info/freedom steps where the exact remaining step count is uncertain - e.g. driver.js's "skipMissingElement: true" (driverInstance.ts) silently skips a step whose target element isn't present for the current activity type, so a hardcoded click count can undercount or overcount depending on which branch actually rendered. Clicks via JS rather than "Click Onboarding Next Button": verified live that a real app modal left open by an earlier step (e.g. the Cloud Sync Status modal, whose "qr-canvas" a later tour step still needs to target) can visually overlap a freedom-mode popover corner-pinned in the same screen region despite its higher z-index, which trips Selenium's own visibility check even though the element is genuinely clickable.
+    FOR    ${i}    IN RANGE    20
+        ${active}=    Run Keyword And Return Status    Wait Until Element Is Visible    xpath=//div[contains(@class, 'driver-popover')]    25s
+        IF    not ${active}    BREAK
+        Sleep    1s
+        ${clicked}=    Execute Javascript    var el=document.querySelector('.driver-popover-next-btn, .driver-popover-done-btn'); if(!el){return false;} el.click(); return true;
+        IF    not ${clicked}    BREAK
+    END
+
+Replay Onboarding Tour
+    [Documentation]    Open the header's settings menu (gear icon, ".ds-header__menu-button") and click "Replay guided tour", manually re-launching the "main" tour regardless of its localStorage "seen" flag (see PageHeader.tsx's "onReplayTourClick" -> "replayTour('main')" in OnboardingProvider.tsx). Same Ant Design stale-hidden-dropdown-node JS-click pattern used elsewhere in this file (see "Delete Account" / "Open Activity Menu And Duplicate").
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'ds-header__menu-button')]    15s
+    Click Element    xpath=//button[contains(@class, 'ds-header__menu-button')]
+    Wait Until Element Is Visible    xpath=//span[contains(@class, 'ant-dropdown-menu-title-content') and contains(text(), 'Replay guided tour')]    5s
+    ${clicked}=    Execute Javascript    var items=[...document.querySelectorAll('.ant-dropdown-menu-title-content')].filter(function(el){return el.textContent.trim()==='Replay guided tour' && el.offsetParent!==null;}); if(items.length===0){return false;} items[0].click(); return true;
+    Should Be True    ${clicked}    Could not find a visible "Replay guided tour" menu item
+
+Choose Onboarding Role
+    [Documentation]    From the "main" tour's single step, click the custom "I'm a teacher" / "I'm a student" picker button (data-role="teacher"/"student" - see mainTour.ts's onPopoverRender), launching the corresponding tour. This step has no driver.js next/prev/close buttons at all ("showButtons: []" in mainTour.ts) - the role buttons are the only way to leave it.
+    [Arguments]    ${role}
+    Wait Until Element Is Visible    xpath=//button[contains(@class, 'onboarding-role-picker__btn') and @data-role='${role}']    15s
+    Click Element    xpath=//button[contains(@class, 'onboarding-role-picker__btn') and @data-role='${role}']
+
+Onboarding Tour Should Be Marked Completed
+    [Documentation]    Assert the given tour's localStorage "seen/completed" flag is true (see storage.ts's ONBOARDING_KEYS map). ${tour_name} is the same key used across the onboarding feature: main, teacher, student, pairAssociation, searchAndFind, informationLayer, autoTriggeredPath, or guidedPath. Verified live: "usePersistentState" (hooks/usePersistentState.ts) persists to localStorage from a "useEffect" reacting to the state change, not synchronously inside the click handler - checking immediately after the tour closes can catch the write mid-flight, so this retries briefly instead of asserting once.
+    [Arguments]    ${tour_name}
+    ${flags}=    Create Dictionary
+    ...    main=mixap.onboarding.mainSeen
+    ...    teacher=mixap.onboarding.teacherCompleted
+    ...    student=mixap.onboarding.studentCompleted
+    ...    pairAssociation=mixap.onboarding.pairAssociationCompleted
+    ...    searchAndFind=mixap.onboarding.searchAndFindCompleted
+    ...    informationLayer=mixap.onboarding.informationLayerCompleted
+    ...    autoTriggeredPath=mixap.onboarding.autoTriggeredPathCompleted
+    ...    guidedPath=mixap.onboarding.guidedPathCompleted
+    ${key}=    Get From Dictionary    ${flags}    ${tour_name}
+    Wait Until Keyword Succeeds    20x    0.5s    Onboarding Flag Should Equal    ${key}    true
+
+Onboarding Flag Should Equal
+    [Documentation]    Helper for "Onboarding Tour Should Be Marked Completed" / "Onboarding Tour Should Not Be Marked Completed": read one localStorage key and assert its (JSON-stringified) value.
+    [Arguments]    ${key}    ${expected}
+    ${value}=    Execute Javascript    return localStorage.getItem('${key}');
+    Should Be Equal As Strings    ${value}    ${expected}
+
+Onboarding Tour Should Not Be Marked Completed
+    [Documentation]    Assert the given tour's localStorage "seen/completed" flag is NOT set - used to confirm the precondition before a tour is expected to auto-trigger for the first time. See "Onboarding Tour Should Be Marked Completed" for the ${tour_name} values.
+    [Arguments]    ${tour_name}
+    ${flags}=    Create Dictionary
+    ...    main=mixap.onboarding.mainSeen
+    ...    teacher=mixap.onboarding.teacherCompleted
+    ...    student=mixap.onboarding.studentCompleted
+    ...    pairAssociation=mixap.onboarding.pairAssociationCompleted
+    ...    searchAndFind=mixap.onboarding.searchAndFindCompleted
+    ...    informationLayer=mixap.onboarding.informationLayerCompleted
+    ...    autoTriggeredPath=mixap.onboarding.autoTriggeredPathCompleted
+    ...    guidedPath=mixap.onboarding.guidedPathCompleted
+    ${key}=    Get From Dictionary    ${flags}    ${tour_name}
+    ${value}=    Execute Javascript    return localStorage.getItem('${key}');
+    Should Not Be Equal As Strings    ${value}    true
