@@ -10,7 +10,7 @@ ${ANIMATED_PATH}    ./assets/animated.gif
 
 *** Keywords ***
 Bypass https alert
-    [Documentation]    passe l'alerte de certificat https invalide
+    [Documentation]    passe l'alerte en cas de certificat https invalide
     Sleep    2
     Click Element    id=details-button
     Sleep    2
