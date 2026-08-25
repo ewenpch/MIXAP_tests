@@ -8,6 +8,10 @@ on:
 jobs:
   test:
     runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        batch: [1, 2, 3]
 
     steps:
       - name: Checkout repository
@@ -24,15 +28,50 @@ jobs:
           # Install additional dependencies if needed
           pip install -r requirements.txt
 
+      - name: Select test files for this batch
+        env:
+          BATCH_INDEX: ${{ matrix.batch }}
+          BATCH_COUNT: 3
+        run: |
+          python3 - <<'PYEOF'
+          import glob
+          import os
+
+          files = sorted(glob.glob('[0-9][0-9][0-9]_*.robot'))
+          total = len(files)
+          batch_count = int(os.environ['BATCH_COUNT'])
+          batch_index = int(os.environ['BATCH_INDEX']) - 1  # 0-indexed
+
+          base = total // batch_count
+          remainder = total % batch_count
+          sizes = [base + (1 if i < remainder else 0) for i in range(batch_count)]
+          start = sum(sizes[:batch_index])
+          end = start + sizes[batch_index]
+          selected = files[start:end]
+
+          print(f"Batch {batch_index + 1}/{batch_count}: {len(selected)} of {total} file(s)")
+          for f in selected:
+              print(f"  {f}")
+
+          with open(os.environ['GITHUB_ENV'], 'a') as f:
+              f.write('TEST_FILES=' + ' '.join(selected) + '\n')
+          PYEOF
+
       - name: Run Robot Framework tests
         env:
           WORK_TOKEN: ${{ secrets.WORKFLOW_TEST }}
           TZ: Asia/Ho_Chi_Minh
         run: |
-          if ! robot --outputdir results --exclude skip .; then
+          if [ -z "$TEST_FILES" ]; then
+              echo "No test files assigned to this batch. Skipping."
+              mkdir -p results
+              exit 0
+          fi
+
+          if ! robot --outputdir results --exclude skip $TEST_FILES; then
               echo "Robot Framework tests failed. Rerunning failed tests..."
               if [ -f results/output.xml ]; then
-                  robot --rerunfailed results/output.xml --outputdir results_rerun . || true
+                  robot --rerunfailed results/output.xml --outputdir results_rerun $TEST_FILES || true
                   if [ -f results_rerun/output.xml ]; then
                       rebot --output results/output.xml --log results/log.html --report results/report.html --merge results/output.xml results_rerun/output.xml
                   else
@@ -50,5 +89,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: ./results
-          name: robot-test-results
+          name: robot-test-results-batch-${{ matrix.batch }}
           retention-days: 3
