@@ -84,12 +84,35 @@ jobs:
               exit 0
           fi
 
-          if ! robot --outputdir results --exclude skip $TEST_FILES; then
-              echo "Robot Framework tests failed. Rerunning failed tests..."
+          # Explicit set +e / capture-$?/ set -e around every robot/rebot call
+          # rather than relying on "if ! CMD; then" or a trailing "|| true" to
+          # neutralize its exit code: GitHub Actions runs "run:" blocks under
+          # "bash -eo pipefail" by default, and Robot Framework/rebot use
+          # reserved non-zero exit codes for their own conditions (e.g. 252 for
+          # "no tests found"/invalid data) - letting any of those propagate
+          # unprotected (as the old unguarded "rebot --merge" call did) aborts
+          # the whole script right there under errexit, which used to surface
+          # as a failed step despite "continue-on-error: true" softening the
+          # job-level outcome. This version can't do that: every robot/rebot
+          # invocation's exit code is captured and handled explicitly, and the
+          # script always finishes with its own "exit 0" - continue-on-error
+          # is kept below only as a defensive backstop, not the primary
+          # mechanism.
+          set +e
+          robot --outputdir results --exclude skip $TEST_FILES
+          ROBOT_EXIT=$?
+          set -e
+
+          if [ "$ROBOT_EXIT" -ne 0 ]; then
+              echo "Robot Framework tests failed (exit $ROBOT_EXIT). Rerunning failed tests..."
               if [ -f results/output.xml ]; then
-                  robot --rerunfailed results/output.xml --outputdir results_rerun $TEST_FILES || true
+                  set +e
+                  robot --rerunfailed results/output.xml --outputdir results_rerun $TEST_FILES
+                  set -e
                   if [ -f results_rerun/output.xml ]; then
+                      set +e
                       rebot --output results/output.xml --log results/log.html --report results/report.html --merge results/output.xml results_rerun/output.xml
+                      set -e
                   else
                       echo "No output.xml file found from rerun. Skipping merge."
                   fi
@@ -99,6 +122,7 @@ jobs:
           fi
 
           echo "Script execution completed"
+          exit 0
         continue-on-error: true
 
       - name: Publish results summary
