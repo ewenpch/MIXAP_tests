@@ -28,6 +28,22 @@ jobs:
           # Install additional dependencies if needed
           pip install -r requirements.txt
 
+      - name: Remove stale pre-installed chromedriver
+        run: |
+          # GitHub-hosted macOS runners ship a Homebrew-installed chromedriver
+          # at /usr/local/bin/chromedriver that goes stale as Chrome
+          # auto-updates on the image, and it shadows Selenium Manager's own
+          # version resolution (Selenium looks at PATH first). Selenium 4.6+
+          # (see requirements.txt) bundles Selenium Manager, which downloads
+          # a chromedriver matching whatever Chrome version is actually
+          # installed - but only if there isn't already one earlier on PATH.
+          if command -v chromedriver >/dev/null 2>&1; then
+              echo "Removing stale chromedriver: $(command -v chromedriver) ($(chromedriver --version 2>/dev/null || true))"
+              sudo rm -f "$(command -v chromedriver)"
+          else
+              echo "No pre-installed chromedriver found on PATH."
+          fi
+
       - name: Select test files for this batch
         env:
           BATCH_INDEX: ${{ matrix.batch }}
