@@ -101,6 +101,54 @@ jobs:
           echo "Script execution completed"
         continue-on-error: true
 
+      - name: Publish results summary
+        if: always()
+        env:
+          BATCH_INDEX: ${{ matrix.batch }}
+        run: |
+          python3 - <<'PYEOF'
+          import os
+          import xml.etree.ElementTree as ET
+
+          xml_path = 'results/output.xml'
+          lines = [f"## Batch {os.environ['BATCH_INDEX']} results"]
+
+          if not os.path.exists(xml_path):
+              lines.append('')
+              lines.append('_No output.xml was produced (no test files assigned to this batch, or Robot Framework failed to start)._')
+          else:
+              tree = ET.parse(xml_path)
+              root = tree.getroot()
+              stat = root.find('./statistics/total/stat')
+              passed = int(stat.get('pass', 0)) if stat is not None else 0
+              failed = int(stat.get('fail', 0)) if stat is not None else 0
+              skipped = int(stat.get('skip', 0)) if stat is not None else 0
+
+              icon = '✅' if failed == 0 else '❌'
+              lines.append('')
+              lines.append(f"{icon} **{passed} passed, {failed} failed, {skipped} skipped**")
+
+              # Only direct <test> children count - the outer wrapper <suite> that
+              # groups every selected .robot file only has <suite> children, so
+              # this can't double-count a file's tests via its ancestor suite.
+              failed_names = []
+              for suite in root.iter('suite'):
+                  suite_name = suite.get('name')
+                  for test in suite.findall('test'):
+                      status = test.find('status')
+                      if status is not None and status.get('status') == 'FAIL':
+                          failed_names.append(f"{suite_name} :: {test.get('name')}")
+
+              if failed_names:
+                  lines.append('')
+                  lines.append('### Failed tests')
+                  for name in failed_names:
+                      lines.append(f'- {name}')
+
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
+              f.write('\n'.join(lines) + '\n')
+          PYEOF
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
