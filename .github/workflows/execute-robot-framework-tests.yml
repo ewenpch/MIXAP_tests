@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        batch: [1, 2, 3]
+        batch: [1, 2, 3, 4, 5]
 
     steps:
       - name: Checkout repository
@@ -47,7 +47,7 @@ jobs:
       - name: Select test files for this batch
         env:
           BATCH_INDEX: ${{ matrix.batch }}
-          BATCH_COUNT: 3
+          BATCH_COUNT: 5
         run: |
           python3 - <<'PYEOF'
           import glob
