@@ -4,6 +4,8 @@ Library    OperatingSystem
 Library    String
 Resource       ./ressources.robot
 
+Suite Teardown    Run Keyword And Ignore Error    Close All Browsers
+
 *** Test Cases ***
 Selecting Pair Association for the first time starts its onboarding tour and walks through it
     [Documentation]    Full step-by-step walkthrough of the "pairAssociation" tour (pairAssociationTour.ts, 10 steps) - auto-triggers the first time a fresh account picks the "Pair Association" card (see ActivityMenu.tsx's handleCardClick). Steps 1-3 are info-only (no real action, just the popover's own "Next"); step 4 is an action step whose real target IS the editor's "Next" button, so clicking it both names the activity and advances the tour in one click; steps 5-6 are "freedom" steps that auto-advance once each marker slot's uploaded image appears (advanceOnElementAppear, see driverInstance.ts), no manual click needed; step 7's target only exists for marker-compiled activity types (useMarkerCompiler in Editor.tsx) - Pair Association's two images are plain uploads, not marker compilation (confirmed live while fixing 037_pairs.robot), so driver.js's "skipMissingElement: true" silently skips it - the remaining tail is walked with "Finish Onboarding Tour By Clicking Next" rather than a hardcoded step count for that reason.

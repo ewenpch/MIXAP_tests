@@ -3,6 +3,8 @@ Library    SeleniumLibrary
 Library    OperatingSystem
 Resource       ./ressources.robot
 
+Suite Teardown    Run Keyword And Ignore Error    Close All Browsers
+
 *** Keywords ***
 Create Empty Augmented Activity For Audio Test - Offline
     [Documentation]    Create and snap the background of the "Audio Tool Test" activity, stopping right after validation so the audio tool can be exercised without navigating away.

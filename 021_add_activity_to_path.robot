@@ -3,6 +3,8 @@ Library    SeleniumLibrary
 Library    OperatingSystem
 Resource       ./ressources.robot
 
+Suite Teardown    Run Keyword And Ignore Error    Close All Browsers
+
 *** Test Cases ***
 create activity and path
     Open Web Application without closing

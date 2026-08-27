@@ -4,6 +4,8 @@ Library    OperatingSystem
 Library    String
 Resource       ./ressources.robot
 
+Suite Teardown    Run Keyword And Ignore Error    Close All Browsers
+
 *** Test Cases ***
 Sign up
     [Documentation]    Uses a freshly-generated random username/email instead of a hardcoded shared account, so this run doesn't add to a shared account's ever-growing history (and doesn't collide with a previous run's already-registered email).
