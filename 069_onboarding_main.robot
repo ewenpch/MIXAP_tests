@@ -4,6 +4,8 @@ Library    OperatingSystem
 Library    String
 Resource       ./ressources.robot
 
+Suite Teardown    Run Keyword And Ignore Error    Close All Browsers
+
 *** Test Cases ***
 The main tour auto-triggers on first Home visit and offers no default buttons
     [Documentation]    Verifies the "main" tour (mainTour.ts) auto-triggers the first time a fresh account visits Home (see Home.tsx's "mainTourSeen" effect). It renders with "showButtons: []" - no driver.js Previous/Next footer buttons - only the two custom "I'm a teacher" / "I'm a student" role-picker buttons injected via onPopoverRender. The corner "X" close button is a separate driver.js fixture unaffected by "showButtons" (verified live: it's still present), so this only asserts the footer buttons are absent.

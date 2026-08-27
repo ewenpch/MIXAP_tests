@@ -2,6 +2,8 @@
 Library    SeleniumLibrary
 Resource       ./ressources.robot
 
+Suite Teardown    Run Keyword And Ignore Error    Close All Browsers
+
 *** Test Cases ***
 create an activity
     Open Web Application without closing

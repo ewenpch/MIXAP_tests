@@ -5,6 +5,8 @@ Library    String
 Library    Collections
 Resource       ./ressources.robot
 
+Suite Teardown    Run Keyword And Ignore Error    Close All Browsers
+
 *** Variables ***
 ${sharecode}    None
 

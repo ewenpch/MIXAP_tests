@@ -4,6 +4,8 @@ Library    OperatingSystem
 Library    String
 Resource       ./ressources.robot
 
+Suite Teardown    Run Keyword And Ignore Error    Close All Browsers
+
 *** Test Cases ***
 Selecting Search and Find for the first time starts its onboarding tour and walks through it
     [Documentation]    Full step-by-step walkthrough of the "searchAndFind" tour (searchAndFindTour.ts, 13 steps) - auto-triggers the first time a fresh account picks the "Search and Find" (Validation type) card (see ActivityMenu.tsx's handleCardClick). Unlike Pair Association, this activity type genuinely goes through marker capture and compilation, so "Snap the background" and "Validate the image" (existing keywords) perform the real clicks steps 5-7 target ("marker-take-photo"/"snapshot-capture"/"snapshot-confirm"), and "Validation button" (fixed earlier this session to target the marker-features modal) performs step 9's real click. Steps 10-12 (the ValidationsPanel timer/message config, then a "try it out" freedom step) have no single required real action worth reproducing here, so they're advanced via the popover's own Next button. Step 13 is the final action step (hides Next - see teacherTour.ts's HIDE_NEXT_BUTTONS pattern reused across every tour file) whose real target is the editor's close button, so "Click home button" both leaves the editor and completes the tour in one click.

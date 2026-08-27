@@ -4,6 +4,8 @@ Library    OperatingSystem
 Library    String
 Resource       ./ressources.robot
 
+Suite Teardown    Run Keyword And Ignore Error    Close All Browsers
+
 *** Test Cases ***
 Sign in
     [Documentation]    Signs up a freshly-generated random account, signs out, then signs back in with those same credentials to exercise the sign-in flow without relying on one of the shared test accounts.

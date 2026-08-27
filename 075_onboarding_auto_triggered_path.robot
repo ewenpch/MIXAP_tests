@@ -4,6 +4,8 @@ Library    OperatingSystem
 Library    String
 Resource       ./ressources.robot
 
+Suite Teardown    Run Keyword And Ignore Error    Close All Browsers
+
 *** Test Cases ***
 Selecting Auto-Triggered path for the first time starts its onboarding tour
     [Documentation]    The "autoTriggeredPath" tour is a single info step with no dedicated wizard steps of its own (autoTriggeredPathTour.ts) - it auto-triggers the first time a fresh account picks the "Auto-Triggered path" card from the New Path menu (see ActivityMenu.tsx's handleCardClick). Verifies the tour appears, can be advanced via its own "Next"/"Done" button, and marks itself completed.

@@ -4,6 +4,8 @@ Library    OperatingSystem
 Library    String
 Resource       ./ressources.robot
 
+Suite Teardown    Run Keyword And Ignore Error    Close All Browsers
+
 *** Test Cases ***
 The student tour walks through the import flow
     [Documentation]    Full step-by-step walkthrough of the "student" tour (studentTour.ts, 7 steps) - reached via the "main" tour's "I'm a student" role picker (mainTour.ts). Students import an activity a teacher already shared rather than build one, so this tour is much shorter than teacherTour.ts. Step 2 is the only action step (its real target - "[data-tour='home-import-activity']" - opens the Import modal); the two freedom steps (4, 6 - "pick one of several real import paths: scan QR or type a code" / general exploration) have no single required action worth reproducing here (a real cross-account share-code import, as done in 031_import.robot, would need a second throwaway account purely to generate a code), so both are advanced via the popover's own Next button instead, same as the plain info steps.

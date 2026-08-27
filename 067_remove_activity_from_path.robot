@@ -4,6 +4,8 @@ Library    OperatingSystem
 Library    String
 Resource       ./ressources.robot
 
+Suite Teardown    Run Keyword And Ignore Error    Close All Browsers
+
 *** Test Cases ***
 Create two activities and a path with both added
     [Documentation]    Creates two activities and a path containing both, so removal can be verified against a known baseline. The removal mechanism itself is non-obvious (confirmed live): clicking a mini-card's title inside the path content drawer selects it and reveals a floating "Remove" action, distinct from the mini-card's own "..." menu (whose "Delete" item instead fully deletes the activity everywhere - see "Delete Activity From Path Drawer By Id").

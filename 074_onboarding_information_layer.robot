@@ -4,6 +4,8 @@ Library    OperatingSystem
 Library    String
 Resource       ./ressources.robot
 
+Suite Teardown    Run Keyword And Ignore Error    Close All Browsers
+
 *** Test Cases ***
 Selecting Information layers for the first time starts its onboarding tour and walks through it
     [Documentation]    Full step-by-step walkthrough of the "informationLayer" tour (informationLayerTour.ts, 17 steps) - auto-triggers the first time a fresh account picks the "Information layers" (Superposition type) card (see ActivityMenu.tsx's handleCardClick). Steps 1-9 mirror searchAndFindTour's naming + marker capture/compile sequence (same "Snap the background"/"Validate the image"/"Next button"/"Validation button" real actions). Steps 11-12 drive the real LayersPanel UI directly by its own BEM classes (per informationLayerTour.ts's own comment: already unique/stable, no dedicated data-tour attributes) - step 11 adds a new layer, step 12 confirms its inline name input. Steps 10/13/16 are open-ended "freedom" exploration steps (add auras, arrange layers) with no single required action, so advanced via the popover's own Next button. Step 17 is the final action step whose real target is the editor's close button.

@@ -4,6 +4,8 @@ Library    OperatingSystem
 Library    String
 Resource       ./ressources.robot
 
+Suite Teardown    Run Keyword And Ignore Error    Close All Browsers
+
 *** Test Cases ***
 The teacher tour walks through the full activity/path/sync workflow
     [Documentation]    Full step-by-step walkthrough of the "teacher" tour (teacherTour.ts, ~30 steps) - reached via the "main" tour's "I'm a teacher" role picker (mainTour.ts). This is the app's entire core workflow chained together: sign up, create an Augmented activity (marker photo, text, stickers, try it), create a Group path, sync it to the cloud and generate a share code. Most steps' real target IS an existing keyword's own click target (Editor.tsx's "data-tour" attributes match "Next button"/"Click home button"; "Snap the background"/"Validate the image"/"Validation button" match the marker capture/compile steps), so performing the real action also advances the tour via driverInstance.ts's onHighlighted click listener - only the few steps with no single required action (freedom steps: trying the activity, dragging a card, the Read-Only-vs-Template explanation) are advanced via the popover's own Next button instead.

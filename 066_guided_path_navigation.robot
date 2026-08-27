@@ -4,6 +4,8 @@ Library    OperatingSystem
 Library    String
 Resource       ./ressources.robot
 
+Suite Teardown    Run Keyword And Ignore Error    Close All Browsers
+
 *** Test Cases ***
 Create two activities and a guided path
     [Documentation]    Creates two activities and a Guided Path containing both, in order, so the path player's step navigation can be verified.

@@ -3,6 +3,8 @@ Library    SeleniumLibrary
 Library    OperatingSystem
 Resource       ./ressources.robot
 
+Suite Teardown    Run Keyword And Ignore Error    Close All Browsers
+
 *** Test Cases ***
 Create activity with tag
     [Documentation]    "Create empty augmented activity" ends back on the home grid (its last step is "Click home button"), but "Add Tag to Activity" targets the editor's own tag UI ("editor__tags-chip") - so the activity's editor must be reopened first, and "Click home button" called again afterwards to leave the state "Delete Tag from Activity" expects (its "home__labels-btn" trigger lives on the home grid).

@@ -4,6 +4,8 @@ Library    OperatingSystem
 Library    String
 Resource       ./ressources.robot
 
+Suite Teardown    Run Keyword And Ignore Error    Close All Browsers
+
 *** Test Cases ***
 Selecting Guided Path for the first time starts its onboarding tour
     [Documentation]    The "guidedPath" tour is a single info step with no dedicated wizard steps of its own (guidedPathTour.ts) - it auto-triggers the first time a fresh account picks the "Guided Path" card from the New Path menu (see ActivityMenu.tsx's handleCardClick). Verifies the tour appears, can be advanced via its own "Next"/"Done" button, and marks itself completed.
