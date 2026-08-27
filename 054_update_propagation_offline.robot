@@ -35,7 +35,7 @@ Import activity as second account
     Go Offline
 
 Add text to the activity as first account and resynchronize
-    [Documentation]    Back on account 1: reopen the original activity, add a text overlay to it, close the editor and push the update to the cloud.
+    [Documentation]    Back on account 1: reopen the original activity, add a text overlay to it while offline, close the editor and click resync, then go back online and wait for the deferred push to actually complete before closing the browser. "Resync Activity"'s own "wait for uploaded" check is not enough here: per ActivityCard.tsx, the sync button carries the "uploaded" class whenever the card has EVER been cloud-synced before (true here - it was already synced once to generate the share code), independent of a separate "dirty" modifier that marks unpushed local changes - so clicking resync while genuinely offline satisfies that wait vacuously without the edit ever reaching the server. Confirmed live (054's own "Verify the text update propagated..." case) that closing the browser only 5s after going back online, with nothing checking the push actually completed, can lose the update entirely - the account 2 badge assertion below then times out because the server genuinely never received it, not because of any fetch/reload issue on account 2's side. Waiting here for the "dirty" class to clear closes that gap - the wait needs at least 60s: per the app's "useAutoActivitySync(delayMs: number = 60_000)" (useAutoActivitySync.ts), a dirty activity's auto-sync only fires after a 60s debounce from its last edit (a shorter 10s "startup delay" only applies to an activity that was already dirty before a page *reload*, which does not happen here), confirmed live via an initial 30s wait timing out.
     Switch Browser    compte1
     Reopen Activity Editor    updated activity ${run_suffix}
     Go Offline
@@ -44,6 +44,8 @@ Add text to the activity as first account and resynchronize
     Resync Activity
     Sleep    5s
     Go Online
+    Wait Until Element Is Not Visible    xpath=//button[contains(@class, 'activity-card__action-button--sync') and contains(@class, 'dirty')]    90s
+    Sleep    5s
     Close Browser
 
 Verify the text update propagated to the imported copy when it goes back online
