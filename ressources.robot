@@ -640,7 +640,7 @@ Sign Out
     Wait Until Element Is Not Visible    xpath=//button[contains(@class, 'confirmation-dialog__button--danger')]    5s
 
 Delete Account
-    [Documentation]    Permanently delete the currently signed-in account, via the header user menu's "Profile" page > "Danger zone" > "Delete account", confirming with the account's own password in the follow-up dialog. Irreversible: deletes the account, profile, and all activities/paths it owns in the cloud. New as of this app update - previously there was no self-service account-deletion feature at all. Use this to clean up a throwaway account created with "Sign Up" instead of leaving it orphaned forever. Verified live: the confirm button starts disabled and only becomes clickable once a password has been typed into the "Current password" field; both the trigger button and the dialog's confirm button share the literal text "Delete account", so the confirm step is scoped to the dialog's own "confirmation-dialog__button--danger" class to avoid ambiguity.
+    [Documentation]    Permanently delete the currently signed-in account, via the header user menu's "Profile" page > "Danger zone" > "Delete account", confirming with the account's own password in the follow-up dialog. Irreversible: deletes the account, profile, and all activities/paths it owns in the cloud. New as of this app update - previously there was no self-service account-deletion feature at all. Use this to clean up a throwaway account created with "Sign Up" instead of leaving it orphaned forever. Verified live: the confirm button starts disabled and only becomes clickable once a password has been typed into the "Current password" field; both the trigger button and the dialog's confirm button share the literal text "Delete account", so the confirm step is scoped to the dialog's own "confirmation-dialog__button--danger" class to avoid ambiguity. The trigger button is clicked via JavaScript rather than "Click Element" - confirmed live (reproduced via 031_import.robot's "Launch imported activity" flow) that a transient Ant Design toast ("ant-notification-notice-wrapper", e.g. a sync-status notification popping up right as the profile page loads) can sit on top of it and throw "element click intercepted" with a native click.
     [Arguments]    ${password}
     Wait Until Element Is Visible    xpath=//button[.//span[contains(@class, 'anticon anticon-user')]]    15s
     Click Element    xpath=//button[.//span[contains(@class, 'anticon anticon-user')]]
@@ -649,7 +649,8 @@ Delete Account
     Should Be True    ${clicked}    Could not find a visible "Profile" menu item
     Wait Until Element Is Visible    xpath=//button[text()='Delete account']    10s
     Scroll Element Into View    xpath=//button[text()='Delete account']
-    Click Element    xpath=//button[text()='Delete account']
+    ${clicked}=    Execute Javascript    var items=[...document.querySelectorAll('button')].filter(function(el){return el.textContent.trim()==='Delete account' && el.offsetParent!==null;}); if(items.length===0){return false;} items[0].click(); return true;
+    Should Be True    ${clicked}    Could not find a visible "Delete account" trigger button
     Wait Until Element Is Visible    xpath=//div[contains(@class, 'confirmation-dialog')]//input[contains(@class, 'profile__input')]    5s
     Click Element    xpath=//div[contains(@class, 'confirmation-dialog')]//input[contains(@class, 'profile__input')]
     Input Text    xpath=//div[contains(@class, 'confirmation-dialog')]//input[contains(@class, 'profile__input')]    ${password}
@@ -799,15 +800,18 @@ Delete Activity Or Path
     RETURN    ${card_id}
 
 Restore Activity Or Path
-    [Documentation]    Open the Trash and restore the card identified by its "data-id" (as returned by "Delete Activity Or Path"). Scoping the restore button by data-id keeps this correct even if the trash holds several look-alike deleted cards. Matched directly under the card (not inside a "top-actions" wrapper) since that wrapper only exists for path cards, not activity cards.
+    [Documentation]    Open the Trash and restore the card identified by its "data-id" (as returned by "Delete Activity Or Path"). Scoping the restore button by data-id keeps this correct even if the trash holds several look-alike deleted cards. Restore is clicked via JavaScript (same "Click Visible Delete Permanently Button" pattern used below) rather than "Wait Until Element Is Visible" + "Click Element" - confirmed live that a "no-cover" path card renders "activity-card__action-button--restore" TWICE: once inside the thumbnail hover-reveal overlay ("activity-card__actions", sitting at opacity:0 until a real mouse hover - its "display"/"visibility"/bounding-rect all read as normal, but ChromeDriver's own is_displayed() correctly reports it as not shown) and once in an always-visible "activity-card__top-actions" wrapper (per the app's "top-actions wrapper only exists for path cards, not activity cards" layout). A locator matching both grabs the first (opacity-hidden) one in DOM order and "Wait Until Element Is Visible" times out even though the second one is genuinely clickable - a JS-triggered ".click()" sidesteps the native visibility check entirely and fires the button's handler regardless of which duplicate it hits.
     [Arguments]    ${card_id}
     Wait Until Element Is Visible    xpath=//button[contains(@class, 'ds-header__download-button') and @title='Trash']    15s
     Click Element    xpath=//button[contains(@class, 'ds-header__download-button') and @title='Trash']
-    ${card}=    Set Variable    xpath=//div[contains(@class, 'activity-card') and @data-id='${card_id}']
-    ${restore_button}=    Set Variable    ${card}//button[contains(@class, 'activity-card__action-button--restore')]
-    Wait Until Element Is Visible    ${restore_button}    15s
-    Scroll Element Into View    ${restore_button}
-    Click Element    ${restore_button}
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'activity-card') and @data-id='${card_id}']    15s
+    Wait Until Keyword Succeeds    10x    1s    Click Visible Restore Button    ${card_id}
+
+Click Visible Restore Button
+    [Documentation]    Helper for "Restore Activity Or Path": find and JS-click the restore button for the given card id (see that keyword's docstring for why a plain visibility-scoped click is not reliable here).
+    [Arguments]    ${card_id}
+    ${clicked}=    Execute Javascript    var card=document.querySelector("div.activity-card[data-id='${card_id}']"); if(!card){return false;} var items=[...card.querySelectorAll("button.activity-card__action-button--restore")]; if(items.length===0){return false;} items[items.length-1].click(); return true;
+    Should Be True    ${clicked}    Could not find a "Restore" button for card ${card_id}
 
 Delete Activity Or Path Permanently
     [Documentation]    Open the Trash and permanently delete the card identified by its "data-id" (as returned by "Delete Activity Or Path"). Scoping the button by data-id keeps this correct even if the trash holds several look-alike deleted cards. Clicked via JS filtering by "offsetParent !== null" (same stale-node pattern used elsewhere in this file) - confirmed live (offline group) that "Click Element" here can hit "element click intercepted" against another element sharing the exact same class list, i.e. a stale mounted-but-hidden duplicate of this button rather than the currently visible one.
@@ -1026,7 +1030,7 @@ Check that the page is in Greek
     Create empty augmented activity    title=Δοκιμή Επαυξημένης Δραστηριότητας
     Change Language    Ελληνικά
     Sleep    2s
-    Wait Until Element Is Visible    xpath=//button[text()="Νέα διαδρομή μάθησης"]   2s
+    Wait Until Element Is Visible    xpath=//button[text()="Ένας νέος τρόπος μάθησης"]   2s
     Wait Until Element Is Visible    xpath=//div[contains(@class, 'activity-card__status-badges')]//span[text()='Τοπικό προσχέδιο']    2s
 
 Check that the page is in Turkish
